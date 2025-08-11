@@ -1,37 +1,112 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  
+  <link rel="prefetch" href="assets/nav.html"><link rel="prefetch" href="assets/footer.html">
   <title>PhotoCheckr - Home</title>
+  <script>tailwind.config = { darkMode: "class" }</script>
+  <script>tailwind = { config: { darkMode: "class" } }</script>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="assets/styles.css">
+  
+
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="manifest" href="assets/site.webmanifest">
+
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col">
 
-  <nav class="bg-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow">
-    <a href="index.html" class="text-xl font-bold text-blue-500 hover:text-blue-400">PhotoCheckr</a>
-    <ul class="flex space-x-6 text-gray-300">
-      <li><a href="index.html" class="hover:text-blue-400">Home</a></li>
-      <li><a href="tool.html" class="hover:text-blue-400">Tool</a></li>
-      <li><a href="about.html" class="hover:text-blue-400">About</a></li>
-      <li><a href="pricing.html" class="hover:text-blue-400">Pricing</a></li>
-    </ul>
-  </nav>
+
+  <nav class="bg-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow" aria-label="Primary">
+  <a href="index.html" class="flex items-center gap-2" aria-label="PhotoCheckr Home"><img id="nav-logo-icon" src="assets/logo-icon-white.png" alt="PhotoCheckr logo icon" class="h-8 w-8 block md:hidden"/><img id="nav-logo-full" src="assets/logo-full-white.png" alt="PhotoCheckr logo" class="h-8 hidden md:block"/></a><div class="flex items-center gap-3 ml-auto"><button id="navToggle" class="md:hidden text-gray-700 dark:text-gray-700 dark:text-gray-300 focus:outline-none focus:ring rounded px-2 py-1" aria-expanded="false" aria-controls="navMenu" aria-label="Toggle navigation">
+    ☰
+  </button><ul id="navMenu" class="hidden md:flex space-x-6 text-gray-700 dark:text-gray-700 dark:text-gray-700 dark:text-gray-300 mt-3 md:mt-0" role="menubar">
+    <li role="none"><a role="menuitem" href="index.html" data-nav="home" class="hover:text-blue-400">Home</a></li>
+    <li role="none"><a role="menuitem" href="tool.html" data-nav="tool" class="hover:text-blue-400">Tool</a></li>
+    <li role="none"><a role="menuitem" href="about.html" data-nav="about" class="hover:text-blue-400">About</a></li>
+    <li role="none"><a role="menuitem" href="pricing.html" data-nav="pricing" class="hover:text-blue-400">Pricing</a></li>
+  </ul><button id="mode-toggle" class="flex items-center gap-1 px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-500 dark:bg-gray-300 dark:text-gray-800 dark:hover:bg-gray-200 transition"><span id="mode-icon">🌙</span><span id="mode-text">Dark</span></button></div>
+</nav></div>
 
   <main class="flex-grow flex flex-col justify-center items-center px-4 max-w-4xl mx-auto text-center space-y-8">
     <h1 class="text-5xl font-extrabold text-blue-500">Welcome to PhotoCheckr</h1>
-    <p class="text-lg max-w-2xl leading-relaxed text-gray-300">
+    <p class="text-lg max-w-2xl leading-relaxed text-gray-700 dark:text-gray-700 dark:text-gray-300">
       Easily compare before & after photos with an interactive slider and annotation tools.
       Perfect for professionals to give feedback and share insights.
     </p>
-    <a href="tool.html" class="inline-block px-8 py-4 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-700 transition">
+    <a href="tool.html" class="inline-block px-8 py-4 bg-blue-600 rounded-lg text-white font-semibold hover:bg-blue-700 transition" aria-label="Open the comparison tool">
       Try the Tool Now
     </a>
   </main>
 
   <footer class="bg-gray-800 text-gray-400 text-center py-6 mt-12">
-    &copy; 2025 PhotoCheckr. All rights reserved.
-  </footer>
+  &copy; 2025 PhotoCheckr. All rights reserved.
+</footer>
+
+
+<!-- Ko-fi Floating Button -->
+<script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+<script>
+  kofiWidgetOverlay.draw('photocheckr', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support Me',
+    'floating-chat.donateButton.background-color': '#29abe0',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script>
+
+
+
+
+
+<script>
+(function(){
+  const html = document.documentElement;
+  const modeToggle = document.getElementById('mode-toggle');
+  const modeIcon = document.getElementById('mode-icon');
+  const modeText = document.getElementById('mode-text');
+  const logoIcon = document.getElementById('nav-logo-icon');
+  const logoFull = document.getElementById('nav-logo-full');
+
+  function setMode(mode) {
+    if (mode === 'light') {
+      html.classList.add('light');
+      modeIcon.textContent = '🌙';
+      modeText.textContent = 'Dark';
+      if (logoIcon) logoIcon.src = 'assets/logo-icon.png';
+      if (logoFull) logoFull.src = 'assets/logo-full.png';
+    } else {
+      html.classList.remove('light');
+      modeIcon.textContent = '☀️';
+      modeText.textContent = 'Light';
+      if (logoIcon) logoIcon.src = 'assets/logo-icon-white.png';
+      if (logoFull) logoFull.src = 'assets/logo-full-white.png';
+    }
+    localStorage.setItem('themeV2', mode);
+  }
+
+  if (modeToggle) {
+    modeToggle.addEventListener('click', () => {
+      const current = html.classList.contains('light') ? 'light' : 'dark';
+      setMode(current === 'light' ? 'dark' : 'light');
+    });
+  }
+
+  const saved = localStorage.getItem('themeV2');
+  if (saved) {
+    setMode(saved);
+  } else {
+    setMode('dark');
+  }
+})();
+</script>
 
 </body>
 </html>

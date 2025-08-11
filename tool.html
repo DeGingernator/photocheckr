@@ -1,395 +1,181 @@
-
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
+<html>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  
+  <link rel="prefetch" href="assets/nav.html"><link rel="prefetch" href="assets/footer.html">
   <title>PhotoCheckr - Tool</title>
+  <script>tailwind.config = { darkMode: "class" }</script>
+  <script>tailwind = { config: { darkMode: "class" } }</script>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script type="module" src="assets/tool.js"></script>
+
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="manifest" href="assets/site.webmanifest">
+
 </head>
 <body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col">
 
-  <nav class="bg-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow">
-    <a href="index.html" class="text-xl font-bold text-blue-500 hover:text-blue-400">PhotoCheckr</a>
-    <ul class="flex space-x-6 text-gray-300">
-      <li><a href="index.html" class="hover:text-blue-400">Home</a></li>
-      <li><a href="tool.html" class="hover:text-blue-400 font-semibold underline">Tool</a></li>
-      <li><a href="about.html" class="hover:text-blue-400">About</a></li>
-      <li><a href="pricing.html" class="hover:text-blue-400">Pricing</a></li>
-    </ul>
-  </nav>
+
+  <nav class="bg-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow" aria-label="Primary">
+  <a href="index.html" class="flex items-center gap-2" aria-label="PhotoCheckr Home"><img id="nav-logo-icon" src="assets/logo-icon-white.png" alt="PhotoCheckr logo icon" class="h-8 w-8 block md:hidden"/><img id="nav-logo-full" src="assets/logo-full-white.png" alt="PhotoCheckr logo" class="h-8 hidden md:block"/></a><div class="flex items-center gap-3 ml-auto"><button id="navToggle" class="md:hidden text-gray-700 dark:text-gray-700 dark:text-gray-300 focus:outline-none focus:ring rounded px-2 py-1" aria-expanded="false" aria-controls="navMenu" aria-label="Toggle navigation">
+    ☰
+  </button><ul id="navMenu" class="hidden md:flex space-x-6 text-gray-700 dark:text-gray-700 dark:text-gray-700 dark:text-gray-300 mt-3 md:mt-0" role="menubar">
+    <li role="none"><a role="menuitem" href="index.html" data-nav="home" class="hover:text-blue-400">Home</a></li>
+    <li role="none"><a role="menuitem" href="tool.html" data-nav="tool" class="hover:text-blue-400">Tool</a></li>
+    <li role="none"><a role="menuitem" href="about.html" data-nav="about" class="hover:text-blue-400">About</a></li>
+    <li role="none"><a role="menuitem" href="pricing.html" data-nav="pricing" class="hover:text-blue-400">Pricing</a></li>
+  </ul><button id="mode-toggle" class="flex items-center gap-1 px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-500 dark:bg-gray-300 dark:text-gray-800 dark:hover:bg-gray-200 transition"><span id="mode-icon">🌙</span><span id="mode-text">Dark</span></button></div>
+</nav></div>
 
   <main class="flex-grow container mx-auto px-4 py-6">
     <h1 class="text-3xl font-bold text-blue-400 text-center mb-6">Compare & Annotate</h1>
 
     <div class="flex justify-center mb-4">
-  <input
-    id="projectTitle"
-    type="text"
-    placeholder="Enter project name..."
-    class="px-4 py-2 rounded bg-gray-800 text-white border border-gray-600 w-full max-w-md text-center"
-  />
-</div>
+      <label for="projectTitle" class="sr-only">Project name</label>
+      <input
+        id="projectTitle"
+        type="text"
+        placeholder="Enter project name..."
+        class="px-4 py-2 rounded bg-white dark:bg-gray-800 text-white border border-gray-600 w-full max-w-md text-center"
+        aria-describedby="titleHelp"
+      />
+    </div>
+    <p id="titleHelp" class="text-center text-gray-600 dark:text-gray-600 dark:text-gray-400 mb-4 text-sm">This title will be used as the PDF filename.</p>
 
     <div class="flex flex-wrap justify-center gap-6 mb-6">
       <div>
-        <label class="block mb-2 text-blue-300 font-medium">Before Image</label>
+        <label class="block mb-2 text-blue-300 font-medium" for="beforeUpload">Before Image</label>
         <label for="beforeUpload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-block">
           Upload Before
         </label>
-        <input type="file" id="beforeUpload" accept="image/*" class="hidden">
+        <input type="file" id="beforeUpload" accept="image/*" class="hidden" aria-label="Upload before image">
       </div>
       <div>
-        <label class="block mb-2 text-blue-300 font-medium">After Image</label>
+        <label class="block mb-2 text-blue-300 font-medium" for="afterUpload">After Image</label>
         <label for="afterUpload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-block">
           Upload After
         </label>
-        <input type="file" id="afterUpload" accept="image/*" class="hidden">
+        <input type="file" id="afterUpload" accept="image/*" class="hidden" aria-label="Upload after image">
       </div>
     </div>
 
-    <div id="imageWrapper" class="relative bg-gray-800 border border-gray-600 rounded mb-4 overflow-hidden mx-auto max-w-4xl">
-      <img id="beforeImg" src="" alt="Before" class="absolute inset-0 object-contain" style="z-index: 1;" />
-      <img id="afterImg" class="after-img absolute inset-0 object-contain" alt="After" />
-      <canvas id="drawCanvas"></canvas>
+    <div id="imageWrapper" class="relative bg-white border border-gray-300 dark:bg-white dark:bg-gray-800 dark:border-gray-600 rounded mb-4 overflow-hidden mx-auto max-w-4xl" aria-live="polite">
+      <span id="beforeBadge" class="badge left-3">Before</span>
+      <span id="afterBadge" class="badge right-3">After</span>
+      <img id="beforeImg" src="" alt="Before image" class="absolute inset-0 object-contain" style="z-index: 1;" />
+      <img id="afterImg" class="after-img absolute inset-0 object-contain" alt="After image" />
+      <canvas id="drawCanvas" aria-label="Annotation canvas" role="img"></canvas>
     </div>
 
     <div class="w-full max-w-2xl mx-auto flex flex-col items-center gap-2 mb-6">
-      <input type="range" id="slider" min="0" max="100" value="50" class="w-full accent-blue-500 cursor-pointer" />
+      <label for="slider" class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300">Comparison slider</label>
+      <input type="range" id="slider" min="0" max="100" value="50" class="w-full accent-blue-500 cursor-pointer" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" />
     </div>
 
     <div class="flex flex-wrap justify-center gap-3 mb-6">
-      <button onclick="setMode('draw')" class="btn">✏️ Draw</button>
+      <button id="drawBtn" onclick="setMode('draw')" class="btn" aria-label="Enable drawing mode">✏️ Draw</button>
       <button onclick="addText()" class="btn">📝 Text</button>
       <button onclick="addCircle()" class="btn">⚪ Circle</button>
       <button onclick="addRect()" class="btn">▭ Rectangle</button>
       <button onclick="addArrow()" class="btn">➡️ Arrow</button>
-      <button onclick="undo()" class="btn">↩️ Undo</button>
-      <button onclick="clearCanvas()" class="btn">🗑️ Clear</button>
-      <button onclick="exportPDF()" class="btn bg-green-600 hover:bg-green-700">📄 Download PDF</button>
+      <button id="undoBtn" class="btn" aria-label="Undo (Ctrl/Cmd+Z)">↩️ Undo</button>
+      <button id="redoBtn" class="btn" aria-label="Redo (Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y)">↪️ Redo</button>
+      <button id="clearBtn" class="btn" aria-label="Clear annotations">🗑️ Clear</button>
+      <button onclick="exportPDF()" class="btn bg-green-600 hover:bg-green-700" aria-label="Download PDF">📄 Download PDF</button>
     </div>
 
     <div class="flex flex-wrap justify-center gap-4 mb-10">
-      <label class="text-sm text-gray-300 flex items-center gap-2">
+      <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="colorPicker">
         🎨 Color:
         <input type="color" id="colorPicker" class="h-8 w-8 rounded" value="#ffffff">
       </label>
-      <label class="text-sm text-gray-300 flex items-center gap-2">
+      <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="lineWidth">
         ✍️ Line Width:
         <input type="range" id="lineWidth" min="1" max="10" value="2" class="accent-blue-500">
       </label>
+      <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="qualitySelect">📄 PDF Quality:<select id="qualitySelect" class="bg-white border border-gray-300 dark:bg-white dark:bg-gray-800 dark:border-gray-600 rounded px-2 py-1"><option value="1">Screen (1x)</option><option value="2" selected>Sharp (2x)</option><option value="3">Print-ish (3x)</option></select></label><button id="saveBtn" class="btn" aria-label="Save project to browser">💾 Save</button>
+      <button id="loadBtn" class="btn" aria-label="Load project from browser">📂 Load</button>
     </div>
+
+    <section class="max-w-3xl mx-auto text-gray-600 dark:text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+      <h2 class="text-blue-300 font-semibold mb-2">Tips</h2>
+      <ul class="list-disc pl-6 space-y-1">
+        <li>Use the slider to reveal the “After” image.</li>
+        <li>Use <kbd>Ctrl/Cmd + Z</kbd> to undo and <kbd>Ctrl/Cmd + Y</kbd> or <kbd>Ctrl/Cmd + Shift + Z</kbd> to redo.</li>
+        <li>Save your project in the browser and load it later.</li>
+      </ul>
+    </section>
   </main>
 
-  <footer class="bg-gray-800 text-gray-400 text-center py-6">
-    &copy; 2025 PhotoCheckr. All rights reserved.
-  </footer>
+  <footer class="bg-gray-800 text-gray-400 text-center py-6 mt-12">
+  &copy; 2025 PhotoCheckr. All rights reserved.
+</footer>
 
-  <style>
-    .btn {
-      background-color: #2563eb;
-      color: white;
-      font-weight: 600;
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      transition: background-color 0.3s ease;
+
+<!-- Ko-fi Floating Button -->
+<script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+<script>
+  kofiWidgetOverlay.draw('photocheckr', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support Me',
+    'floating-chat.donateButton.background-color': '#29abe0',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script>
+
+
+
+
+
+<script>
+(function(){
+  const html = document.documentElement;
+  const modeToggle = document.getElementById('mode-toggle');
+  const modeIcon = document.getElementById('mode-icon');
+  const modeText = document.getElementById('mode-text');
+  const logoIcon = document.getElementById('nav-logo-icon');
+  const logoFull = document.getElementById('nav-logo-full');
+
+  function setMode(mode) {
+    if (mode === 'light') {
+      html.classList.add('light');
+      modeIcon.textContent = '🌙';
+      modeText.textContent = 'Dark';
+      if (logoIcon) logoIcon.src = 'assets/logo-icon.png';
+      if (logoFull) logoFull.src = 'assets/logo-full.png';
+    } else {
+      html.classList.remove('light');
+      modeIcon.textContent = '☀️';
+      modeText.textContent = 'Light';
+      if (logoIcon) logoIcon.src = 'assets/logo-icon-white.png';
+      if (logoFull) logoFull.src = 'assets/logo-full-white.png';
     }
-    .btn:hover {
-      background-color: #1d4ed8;
-    }
-    .after-img {
-      clip-path: inset(0 50% 0 0);
-      z-index: 2;
-    }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: 10;
-      pointer-events: auto;
-      user-select: none;
-    }
-  </style>
-
-  <script>
-    const beforeImg = document.getElementById("beforeImg");
-    const afterImg = document.getElementById("afterImg");
-    const slider = document.getElementById("slider");
-    const drawCanvas = document.getElementById("drawCanvas");
-    const wrapper = document.getElementById("imageWrapper");
-    const colorPicker = document.getElementById("colorPicker");
-    const lineWidth = document.getElementById("lineWidth");
-
-    let canvas;
-    let undoStack = [];
-
-    document.getElementById("beforeUpload").addEventListener("change", e => {
-      const file = e.target.files[0];
-      if (file) beforeImg.src = URL.createObjectURL(file);
-    });
-
-    document.getElementById("afterUpload").addEventListener("change", e => {
-      const file = e.target.files[0];
-      if (file) afterImg.src = URL.createObjectURL(file);
-    });
-
-    slider.addEventListener("input", () => {
-      afterImg.style.clipPath = `inset(0 ${100 - slider.value}% 0 0)`;
-    });
-
-    beforeImg.onload = handleImageLoad;
-    afterImg.onload = handleImageLoad;
-    window.onresize = updateCanvasSize;
-
-    function handleImageLoad() {
-      if (beforeImg.complete && afterImg.complete) updateCanvasSize();
-    }
-
-    function updateCanvasSize() {
-      const w = wrapper.clientWidth;
-      const h = w * 0.6;
-      wrapper.style.height = h + "px";
-      drawCanvas.width = w;
-      drawCanvas.height = h;
-
-      beforeImg.style.width = afterImg.style.width = w + "px";
-      beforeImg.style.height = afterImg.style.height = h + "px";
-
-      if (!canvas) {
-        canvas = new fabric.Canvas('drawCanvas', {
-          isDrawingMode: false,
-          selection: true,
-          preserveObjectStacking: true
-        });
-        canvas.setWidth(w);
-        canvas.setHeight(h);
-
-        canvas.freeDrawingBrush.color = colorPicker.value;
-        canvas.freeDrawingBrush.width = parseInt(lineWidth.value);
-
-        canvas.on('object:added', saveState);
-        canvas.on('object:modified', saveState);
-        canvas.on('object:removed', saveState);
-        saveState();
-      } else {
-        canvas.setWidth(w);
-        canvas.setHeight(h);
-      }
-    }
-
-    function saveState() {
-      undoStack.push(JSON.stringify(canvas));
-      if (undoStack.length > 50) undoStack.shift();
-    }
-
-    function undo() {
-      if (undoStack.length > 1) {
-        undoStack.pop();
-        const prev = undoStack[undoStack.length - 1];
-        canvas.loadFromJSON(prev, () => canvas.renderAll());
-      }
-    }
-
-    let currentMode = 'select';
-
-function setMode(mode) {
-  if (!canvas) return;
-
-  currentMode = mode;
-  canvas.isDrawingMode = (mode === 'draw');
-
-  if (mode === 'draw') {
-    canvas.selection = false;
-    canvas.discardActiveObject();
-    canvas.renderAll();
-  } else {
-    canvas.selection = true;
-    canvas.isDrawingMode = false;
-    canvas.forEachObject(obj => obj.selectable = true);
+    localStorage.setItem('themeV2', mode);
   }
-}
 
-
-    function addText() {
-      const text = new fabric.IText('Double-click to edit', {
-        left: 50, top: 50,
-        fill: colorPicker.value,
-        fontSize: 20,
-        fontWeight: 'bold'
-      });
-      canvas.add(text);
-      canvas.setActiveObject(text);
-      text.enterEditing();
-      setMode('select');
-    }
-
-    function addCircle() {
-      const circle = new fabric.Circle({
-        left: 60, top: 60, radius: 30,
-        fill: 'transparent',
-        stroke: colorPicker.value,
-        strokeWidth: 2
-      });
-      canvas.add(circle);
-      setMode('select');
-    }
-
-    function addRect() {
-      const rect = new fabric.Rect({
-        left: 60, top: 60, width: 100, height: 60,
-        fill: 'transparent',
-        stroke: colorPicker.value,
-        strokeWidth: 2
-      });
-      canvas.add(rect);
-      setMode('select');
-    }
-
-    function addArrow() {
-      const line = new fabric.Line([50, 100, 150, 100], {
-        stroke: colorPicker.value, strokeWidth: 2
-      });
-      const triangle = new fabric.Triangle({
-        left: 150, top: 100,
-        originX: 'center', originY: 'center',
-        width: 10, height: 15, angle: 90,
-        fill: colorPicker.value
-      });
-      const group = new fabric.Group([line, triangle], { left: 50, top: 100 });
-      canvas.add(group);
-      setMode('select');
-    }
-
-    function clearCanvas() {
-      if (confirm("Clear all annotations?")) {
-        canvas.clear();
-        undoStack = [];
-        saveState();
-      }
-    }
-
-  async function exportPDF() {
-  const { jsPDF } = window.jspdf;
-
-  // 🔤 Haal bestandsnaam/titel op uit input
-  const titleInput = document.getElementById("projectTitle");
-  const filename = titleInput?.value?.trim() || "PhotoCheckr_Export";
-
-  const pdfWidth = canvas.width;
-  const pdfHeight = canvas.height;
-
-  const pdf = new jsPDF({
-    orientation: "landscape",
-    unit: "pt",
-    format: [pdfWidth, pdfHeight + 40]
-  });
-
-  // 📐 Tijdelijk canvas om alles samen te voegen
-  const tempCanvas = document.createElement('canvas');
-  tempCanvas.width = canvas.width;
-  tempCanvas.height = canvas.height;
-  const ctx = tempCanvas.getContext('2d');
-
-  // ⬅️ Before image
-  await drawImageScaled(ctx, beforeImg, tempCanvas);
-
-  // ➡️ After image met slider-clip
-  ctx.save();
-  const clipWidth = tempCanvas.width * (slider.value / 100);
-  ctx.beginPath();
-  ctx.rect(0, 0, clipWidth, tempCanvas.height);
-  ctx.clip();
-  await drawImageScaled(ctx, afterImg, tempCanvas);
-  ctx.restore();
-
-  // 🎨 Annotations (fabric canvas overlay)
-  const annotationImage = new Image();
-  annotationImage.src = canvas.toDataURL({
-    format: 'png',
-    multiplier: 1,
-    enableRetinaScaling: true
-  });
-
-  await new Promise(resolve => {
-    annotationImage.onload = () => {
-      ctx.drawImage(annotationImage, 0, 0);
-      resolve();
-    };
-  });
-
-  // 📤 PDF genereren met titel & export
-  const combined = tempCanvas.toDataURL('image/png');
-  pdf.addImage(combined, 'PNG', 0, 20, pdfWidth, pdfHeight);
-
-  // 🖋️ Titel toevoegen (bovenaan PDF)
-  pdf.setFontSize(16);
-  pdf.text(filename, 10, 15);
-
-  // 💾 PDF opslaan met bestandsnaam uit input
-  pdf.save(`${filename}.pdf`);
-}
-
-
-
-    // Apply color to brush and selection
-    colorPicker.addEventListener("input", () => {
-      if (canvas) {
-        canvas.freeDrawingBrush.color = colorPicker.value;
-        const active = canvas.getActiveObject();
-        if (active) {
-          if (active.type === 'i-text') {
-            active.set({ fill: colorPicker.value });
-          } else if (active.type === 'circle' || active.type === 'rect' || active.type === 'line') {
-            active.set({ stroke: colorPicker.value });
-          }
-          canvas.renderAll();
-        }
-      }
+  if (modeToggle) {
+    modeToggle.addEventListener('click', () => {
+      const current = html.classList.contains('light') ? 'light' : 'dark';
+      setMode(current === 'light' ? 'dark' : 'light');
     });
+  }
 
-    lineWidth.addEventListener("input", () => {
-      if (canvas) {
-        canvas.freeDrawingBrush.width = parseInt(lineWidth.value);
-      }
-    });
+  const saved = localStorage.getItem('themeV2');
+  if (saved) {
+    setMode(saved);
+  } else {
+    setMode('dark');
+  }
+})();
+</script>
 
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Delete" && canvas) {
-        const active = canvas.getActiveObject();
-        if (active) {
-          canvas.remove(active);
-        }
-      }
-    });
-    function drawImageScaled(ctx, img, canvas) {
-  return new Promise((resolve) => {
-    if (!img.src) return resolve();
-
-    const hRatio = canvas.width / img.naturalWidth;
-    const vRatio = canvas.height / img.naturalHeight;
-    const ratio = Math.min(hRatio, vRatio);
-
-    const centerX = (canvas.width - img.naturalWidth * ratio) / 2;
-    const centerY = (canvas.height - img.naturalHeight * ratio) / 2;
-
-    ctx.drawImage(
-      img,
-      0,
-      0,
-      img.naturalWidth,
-      img.naturalHeight,
-      centerX,
-      centerY,
-      img.naturalWidth * ratio,
-      img.naturalHeight * ratio
-    );
-
-    resolve();
-  });
-}
-
-  </script>
 </body>
 </html>
