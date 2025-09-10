@@ -36,6 +36,49 @@
 </nav></div>
 
   <main class="flex-grow container mx-auto px-4 py-6">
+    <!-- View mode toolbar (top-left under nav) -->
+    <div id="viewModeToolbar" style="display:none" class="w-full flex items-center gap-3 mb-4 justify-start edge-left">
+      <div id="sizeControls" class="ml-4 flex items-center gap-2" title="Foto-grootte">
+        <label for="photoScale" class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Foto-grootte</label>
+        <input id="photoScale" type="range" min="75" max="125" step="25" value="100" class="w-44" aria-label="Foto-grootte (in procent)">
+        <span id="photoScaleOut" class="text-sm text-gray-600 dark:text-gray-300">100%</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Slider -->
+        <div class="mode-item"><button id="modeSliderBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="true" role="tab" title="Slider" aria-label="Slider">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+            <rect x="3" y="4" width="8" height="16" rx="2" opacity="0.4"></rect>
+            <rect x="13" y="4" width="8" height="16" rx="2"></rect>
+          </svg>
+        </button><div class="mode-caption-outside">Slider</div></div>
+        <!-- Side by Side -->
+        <div class="mode-item"><button id="modeSideBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" title="Side by Side" aria-label="Side-by-Side">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+            <rect x="3" y="4" width="8" height="16" rx="2"></rect>
+            <rect x="13" y="4" width="8" height="16" rx="2" opacity="0.4"></rect>
+          </svg>
+        </button><div class="mode-caption-outside">Side-by-Side</div></div>
+        <!-- Single Photo -->
+        <div class="mode-item"><button id="modeSingleBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" title="Single Photo" aria-label="Single Photo">
+          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+            <rect x="5" y="6" width="14" height="12" rx="2"></rect>
+          </svg>
+        </button><div class="mode-caption-outside">Single Photo</div></div>
+      </div>
+      <fieldset id="singleControls" class="hidden ml-4">
+        <legend class="sr-only">Single photo source</legend>
+        <label class="mr-3 inline-flex items-center gap-1 text-sm">
+          <input type="radio" id="singleBefore" name="singleSource" value="before" checked />
+          <span>Before</span>
+        </label>
+        <label class="inline-flex items-center gap-1 text-sm">
+          <input type="radio" id="singleAfter" name="singleSource" value="after" />
+          <span>After</span>
+        </label>
+      </fieldset>
+    </div>
+
     <h1 class="text-3xl font-bold text-blue-400 text-center mb-6">Compare & Annotate</h1>
 
     <div class="flex justify-center mb-4">
@@ -67,15 +110,41 @@
       </div>
     </div>
 
-    <div id="imageWrapper" class="relative bg-white border border-gray-300 dark:bg-white dark:bg-gray-800 dark:border-gray-600 rounded mb-4 overflow-hidden mx-auto max-w-4xl" aria-live="polite">
-      <span id="beforeBadge" class="badge left-3">Before</span>
+    
+<div id="viewerFloat" class="flex gap-3 items-start mx-auto relative w-full">
+
+  <div id="descSpacer" class="desc-spacer" aria-hidden="true"></div>
+<div id="imageWrapper" class="relative bg-white border border-gray-300 dark:bg-white dark:bg-gray-800 dark:border-gray-600 rounded mb-4 overflow-hidden mx-auto max-w-4xl min-h-[360px]" aria-live="polite">
+<span id="beforeBadge" class="badge left-3">Before</span>
       <span id="afterBadge" class="badge right-3">After</span>
       <img id="beforeImg" src="" alt="Before image" class="absolute inset-0 object-contain" style="z-index: 1;" />
       <img id="afterImg" class="after-img absolute inset-0 object-contain" alt="After image" />
       <canvas id="drawCanvas" aria-label="Annotation canvas" role="img"></canvas>
     </div>
+  <aside id="descPanel" class="desc-panel px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur"
+         aria-label="Beschrijving (max 140)">
+    <label for="descriptionInput" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Beschrijving (max 140)</label>
+    <textarea id="descriptionInput" maxlength="400" class="flex-1 w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+      placeholder="Beschrijf kort..." maxlength="400"></textarea>
+    <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="descCount">0</span>/140</div>
+  </aside>
+</div>
 
-    <div class="w-full max-w-2xl mx-auto flex flex-col items-center gap-2 mb-6">
+
+    
+    <!-- Side-by-side container (hidden by default) -->
+    <div id="sideBySideContainer" class="hidden bg-white border border-gray-700 rounded mb-4 overflow-hidden mx-auto max-w-4xl relative">
+      <div class="grid grid-cols-2 gap-0 h-full min-h-[200px]">
+        <div class="relative">
+          <img id="beforeImgSide" alt="Before image (side)" class="absolute inset-0 w-full h-full object-contain" />
+        </div>
+        <div class="relative">
+          <img id="afterImgSide" alt="After image (side)" class="absolute inset-0 w-full h-full object-contain" />
+        </div>
+      </div>
+      <canvas id="drawCanvasSide" aria-label="Annotation canvas (side-by-side)" role="img"></canvas>
+    </div>
+<div id="sliderContainer" class="w-full max-w-2xl mx-auto flex flex-col items-center gap-2 mb-6">
       <label for="slider" class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300">Comparison slider</label>
       <input type="range" id="slider" min="0" max="100" value="50" class="w-full accent-blue-500 cursor-pointer" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" />
     </div>
@@ -95,7 +164,7 @@
     <div class="flex flex-wrap justify-center gap-4 mb-10">
       <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="colorPicker">
         🎨 Color:
-        <input type="color" id="colorPicker" class="h-8 w-8 rounded" value="#ffffff">
+        <input type="color" id="colorPicker" class="h-8 w-8 rounded" value="#ff0000">
       </label>
       <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="lineWidth">
         ✍️ Line Width:
@@ -174,6 +243,236 @@
   } else {
     setMode('dark');
   }
+})();
+</script>
+
+
+<!-- PATCH: Runtime V9 grid rows for descPanel (no absolute) -->
+<script>
+// Runtime V9: grid rows for descPanel, no absolute positioning
+(() => {
+  const dp = document.querySelector('#viewerFloat #descPanel');
+  const ti = document.getElementById('descriptionInput');
+  const last = dp ? dp.querySelector('div:last-child') : null;
+  if (dp) {
+    Object.assign(dp.style, {
+      position: 'static',
+      display: 'grid',
+      gridTemplateRows: 'auto 1fr auto',
+      paddingBottom: '0'
+    });
+  }
+  if (last) Object.assign(last.style, { position: 'static', left:'', right:'', bottom:'' });
+  if (ti) Object.assign(ti.style, { minHeight:'0', height:'auto' });
+  console.log('Runtime V9 applied');
+})();
+</script>
+
+
+<!-- PATCH: Extend description textarea to match photo height -->
+<script>
+// Extend description textarea to match photo height (quick fix)
+(() => {
+  const iw = document.getElementById('imageWrapper');
+  const dp = document.querySelector('#viewerFloat #descPanel');
+  const ta = document.getElementById('descriptionInput');
+  if (!iw || !dp || !ta) { console.warn('Elements not found'); return; }
+
+  // helper: current numeric (px) value
+  const px = v => (v ? parseFloat(v) || 0 : 0);
+
+  function fit() {
+    const h = iw.getBoundingClientRect().height;
+    if (!h) return;
+
+    // ensure panel lays out vertically
+    dp.style.display = 'grid';
+    dp.style.gridTemplateRows = 'auto 1fr auto';
+
+    // measure label + counter + paddings
+    const label = dp.querySelector('label[for="descriptionInput"]');
+    // counter is het laatste <div> in het paneel
+    const counter = (() => {
+      const kids = Array.from(dp.children);
+      return kids[kids.length - 1]?.tagName === 'DIV' ? kids[kids.length - 1] : null;
+    })();
+
+    const cs = getComputedStyle(dp);
+    const padY = px(cs.paddingTop) + px(cs.paddingBottom);
+
+    const labelH = label ? label.getBoundingClientRect().height : 0;
+    const counterH = counter ? counter.getBoundingClientRect().height : 0;
+
+    // set explicit heights so the textarea fills to the bottom
+    dp.style.height = h + 'px';
+    ta.style.minHeight = '0';
+    ta.style.height = Math.max(60, h - (labelH + counterH + padY)) + 'px';
+  }
+
+  // initial run + react to resizes/loads
+  fit();
+  const ro = new ResizeObserver(fit);
+  ro.observe(iw);
+
+  // also watch canvas-container (height may change after draw)
+  const wrap = document.querySelector('#imageWrapper .canvas-container');
+  if (wrap) ro.observe(wrap);
+
+  window.addEventListener('resize', fit);
+  console.log('✅ descriptionInput extended to photo height');
+})();
+</script>
+
+
+<!-- PATCH: PDF export wide-page LANDSCAPE rebuild — photo full (contain) on left; desc right column -->
+<script>
+(() => {
+  const TAG = '[PDF wide rebuild LANDSCAPE]';
+
+  function whenJsPDF(cb){
+    function run(){ try{ cb(window.jspdf.jsPDF); }catch(e){ console.warn(TAG, e); } }
+    if (window.jspdf && window.jspdf.jsPDF) return run();
+    const iv = setInterval(() => {
+      if (window.jspdf && window.jspdf.jsPDF) { clearInterval(iv); run(); }
+    }, 200);
+    window.addEventListener('load', () => {
+      if (window.jspdf && window.jspdf.jsPDF) { clearInterval(iv); run(); }
+    });
+    setTimeout(() => clearInterval(iv), 15000);
+  }
+
+  whenJsPDF((jsPDF) => {
+    // Record addImage calls
+    function patchAddImage(proto){
+      if (!proto || proto.__recImgLandscape) return;
+      const orig = proto.addImage;
+      if (typeof orig !== 'function') return;
+      proto.addImage = function(...args){
+        try {
+          const pw = this.internal.pageSize.getWidth();
+          const ph = this.internal.pageSize.getHeight();
+          this.__imgRecs = this.__imgRecs || [];
+          let x=0,y=0,w=null,h=null;
+          if (typeof args[2] === 'number') x = args[2];
+          if (typeof args[3] === 'number') y = args[3];
+          if (typeof args[4] === 'number') w = args[4];
+          if (typeof args[5] === 'number') h = args[5];
+          this.__imgRecs.push({ args, pw, ph, x, y, w, h });
+        } catch(e){ console.warn(TAG, 'rec err', e); }
+        return orig.apply(this, args);
+      };
+      proto.__recImgLandscape = true;
+      console.log(TAG, 'recorder installed');
+    }
+
+    // Save override: rebuild landscape page wider; draw main image contain-fit on left
+    function patchSave(proto){
+      if (!proto || proto.__saveWideLandscape) return;
+      proto.save = function(filename='download.pdf'){
+        try {
+          const ta = document.getElementById('descriptionInput') ||
+                     document.querySelector('#descPanel textarea') ||
+                     document.querySelector('textarea');
+          const desc = (ta?.value || '').trim();
+          const recs = this.__imgRecs || [];
+
+          if (!desc || !recs.length) {
+            // fallback normal save via blob
+            try {
+              const blob = this.output('blob');
+              const url  = URL.createObjectURL(blob);
+              const a    = document.createElement('a');
+              a.href = url; a.download = filename || 'download.pdf';
+              document.body.appendChild(a); a.click(); a.remove();
+              setTimeout(()=>URL.revokeObjectURL(url), 1500);
+            } catch (e) {
+              console.error(TAG,'blob save failed', e);
+              alert('PDF save failed: ' + (e?.message || e));
+            }
+            return this;
+          }
+
+          const main = recs[0];
+          const pw0 = main.pw, ph0 = main.ph;
+          const colW = 200; // right column
+          const wWide = pw0 + colW;
+
+          // Enforce LANDSCAPE orientation explicitly
+          const ndoc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [wWide, ph0] });
+
+          // Draw main image contain-fit inside left area (0..pw0 by 0..ph0), centered
+          try {
+            const a = main.args.slice();
+            // get intended natural bounds from recorded width/height (fallback to full page)
+            const iw = (typeof main.w === 'number' && main.w > 0) ? main.w : pw0;
+            const ih = (typeof main.h === 'number' && main.h > 0) ? main.h : ph0;
+            const scale = Math.min(pw0 / iw, ph0 / ih);
+            const dw = Math.max(1, Math.floor(iw * scale));
+            const dh = Math.max(1, Math.floor(ih * scale));
+            const dx = Math.floor((pw0 - dw) / 2);
+            const dy = Math.floor((ph0 - dh) / 2);
+            // place image
+            a[2] = dx; a[3] = dy; a[4] = dw; a[5] = dh;
+            ndoc.addImage.apply(ndoc, a);
+          } catch(e){ console.warn(TAG, 'main image draw err', e); }
+
+          // Re-draw any additional images (overlays) with their original coords (shift x if needed? keep as is on left area)
+          try {
+            for (let i=1;i<recs.length;i++){
+              const r = recs[i];
+              const a = r.args.slice();
+              if (typeof a[2] !== 'number') a[2] = r.x || 0;
+              if (typeof a[3] !== 'number') a[3] = r.y || 0;
+              if (typeof a[4] !== 'number') a[4] = r.w || 0;
+              if (typeof a[5] !== 'number') a[5] = r.h || 0;
+              // Ensure overlay stays within left area (no shift)
+              ndoc.addImage.apply(ndoc, a);
+            }
+          } catch(e){ console.warn(TAG, 'overlay draw err', e); }
+
+          // Right white column + text (never covers photo)
+          try {
+            ndoc.setFillColor(255,255,255);
+            ndoc.rect(pw0, 0, colW, ph0, 'F');
+            ndoc.setDrawColor(160); ndoc.setLineWidth(0.5);
+            ndoc.line(pw0, 0, pw0, ph0);
+            ndoc.setTextColor(0,0,0);
+            ndoc.setFont && ndoc.setFont('helvetica','normal');
+            ndoc.setFontSize(12);
+            const margin = 8;
+            const wrapped = ndoc.splitTextToSize(desc, colW - 2*margin);
+            ndoc.text(wrapped, pw0 + margin, 28, { align:'left', baseline:'top' });
+          } catch(e){ console.warn(TAG, 'desc draw err', e); }
+
+          // Save ndoc
+          try {
+            const blob = ndoc.output('blob');
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url; a.download = filename || 'download.pdf';
+            document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(()=>URL.revokeObjectURL(url), 1500);
+          } catch (e) {
+            console.error(TAG,'blob save failed', e);
+            alert('PDF save failed: ' + (e?.message || e));
+          }
+
+          return this;
+        } catch (e) {
+          console.error(TAG, 'save err', e);
+          alert('PDF export failed: ' + (e?.message || e));
+          return this;
+        }
+      };
+      proto.__saveWideLandscape = true;
+      console.log(TAG, 'save override installed');
+    }
+
+    patchAddImage(jsPDF.prototype);
+    if (jsPDF.API) patchAddImage(jsPDF.API);
+    patchSave(jsPDF.prototype);
+    if (jsPDF.API) patchSave(jsPDF.API);
+  });
 })();
 </script>
 
