@@ -6,7 +6,7 @@
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
   
   <link rel="prefetch" href="assets/nav.html"><link rel="prefetch" href="assets/footer.html">
-  <title>PhotoCheckr - Home</title>
+  <title>YmageCheckr - Home</title>
   <script>tailwind.config = { darkMode: "class" }</script>
   <script>tailwind = { config: { darkMode: "class" } }</script>
   <script src="https://cdn.tailwindcss.com"></script>
@@ -30,13 +30,15 @@
   </button><ul id="navMenu" class="hidden md:flex space-x-6 text-gray-700 dark:text-gray-700 dark:text-gray-700 dark:text-gray-300 mt-3 md:mt-0" role="menubar">
     <li role="none"><a role="menuitem" href="index.html" data-nav="home" class="hover:text-blue-400">Home</a></li>
     <li role="none"><a role="menuitem" href="tool.html" data-nav="tool" class="hover:text-blue-400">Tool</a></li>
-    <li role="none"><a role="menuitem" href="about.html" data-nav="about" class="hover:text-blue-400">About</a></li>
-    <li role="none"><a role="menuitem" href="pricing.html" data-nav="pricing" class="hover:text-blue-400">Pricing</a></li>
-  </ul><button id="mode-toggle" class="flex items-center gap-1 px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-500 dark:bg-gray-300 dark:text-gray-800 dark:hover:bg-gray-200 transition"><span id="mode-icon">🌙</span><span id="mode-text">Dark</span></button></div>
+    <li role="none"><a href="3d-tool.html" class="hover:text-blue-400">3D Tool</a>
+<a role="menuitem" href="about.html" data-nav="about" class="hover:text-blue-400">About</a></li>
+    
 </nav></div>
 
   <main class="flex-grow flex flex-col justify-center items-center px-4 max-w-4xl mx-auto text-center space-y-8">
-    <h1 class="text-5xl font-extrabold text-blue-500">Welcome to PhotoCheckr</h1>
+    <h1 class="text-5xl font-extrabold" style="color:#f9aa33;">
+  Welcome to YmageCheckr
+</h1>
     <p class="text-lg max-w-2xl leading-relaxed text-gray-700 dark:text-gray-700 dark:text-gray-300">
       Easily compare before & after photos with an interactive slider and annotation tools.
       Perfect for professionals to give feedback and share insights.
@@ -47,14 +49,14 @@
   </main>
 
   <footer class="bg-gray-800 text-gray-400 text-center py-6 mt-12">
-  &copy; 2025 PhotoCheckr. All rights reserved.
+  &copy; 2025 YmageCheckr. All rights reserved.
 </footer>
 
 
-<!-- Ko-fi Floating Button -->
-<script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+<!--  Floating Button -->
+
 <script>
-  kofiWidgetOverlay.draw('photocheckr', {
+  WidgetOverlay.draw('photocheckr', {
     'type': 'floating-chat',
     'floating-chat.donateButton.text': 'Support Me',
     'floating-chat.donateButton.background-color': '#29abe0',
@@ -66,45 +68,23 @@
 
 
 
+
+
+
 <script>
 (function(){
-  const html = document.documentElement;
-  const modeToggle = document.getElementById('mode-toggle');
-  const modeIcon = document.getElementById('mode-icon');
-  const modeText = document.getElementById('mode-text');
-  const logoIcon = document.getElementById('nav-logo-icon');
-  const logoFull = document.getElementById('nav-logo-full');
-
-  function setMode(mode) {
-    if (mode === 'light') {
-      html.classList.add('light');
-      modeIcon.textContent = '🌙';
-      modeText.textContent = 'Dark';
-      if (logoIcon) logoIcon.src = 'assets/logo-icon.png';
-      if (logoFull) logoFull.src = 'assets/logo-full.png';
-    } else {
-      html.classList.remove('light');
-      modeIcon.textContent = '☀️';
-      modeText.textContent = 'Light';
-      if (logoIcon) logoIcon.src = 'assets/logo-icon-white.png';
-      if (logoFull) logoFull.src = 'assets/logo-full-white.png';
+  try{
+    var path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    var links = document.querySelectorAll('nav a[href]');
+    for (var i=0;i<links.length;i++){
+      var a = links[i];
+      var href = (a.getAttribute('href')||'').split('/').pop().toLowerCase();
+      if (href === path){
+        a.classList.add('nav-active');
+        a.style.textDecorationColor = '#F9AA33';
+      }
     }
-    localStorage.setItem('themeV2', mode);
-  }
-
-  if (modeToggle) {
-    modeToggle.addEventListener('click', () => {
-      const current = html.classList.contains('light') ? 'light' : 'dark';
-      setMode(current === 'light' ? 'dark' : 'light');
-    });
-  }
-
-  const saved = localStorage.getItem('themeV2');
-  if (saved) {
-    setMode(saved);
-  } else {
-    setMode('dark');
-  }
+  }catch(e){}
 })();
 </script>
 

@@ -9,7 +9,7 @@ const state = {
   undoStack: [],
   redoStack: [],
   currentMode: 'select',
-  viewMode: 'sideBySide',
+  viewMode: 'slider',
   singleSource: 'before',
   canvasSide: null,
   undoSide: [], redoSide: [],
@@ -18,12 +18,8 @@ const state = {
   tabs: [],
   activeTabId: null,
 };
-window.state = state;
-
 
 const els = {};
-window.els = els;
-
 
 // === styleSideOverlay (EXACT console snippet) ===
 function styleSideOverlay(){
@@ -97,7 +93,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   initCanvasWhenReady();
   try{ initPhotoScale(); }catch(_){ }
   try{ setupControlsDockLeft(); }catch(_){ }
-  installSingleFloatingControls();
     try{ setupControlsDockRight(); }catch(_){ }
   try{ ensureTabRail(); }catch(_){ }
 try{ setupDockColorObserver(); }catch(_){ }
@@ -112,7 +107,6 @@ try{ setupDockColorObserver(); }catch(_){ }
       state.tabs = [t];
       state.activeTabId = t.id;
       updateTabRail();
-    applyTab(t);
     } else {
       if (!state.activeTabId) state.activeTabId = state.tabs[0].id;
       updateTabRail();
@@ -144,8 +138,6 @@ function cacheEls(){
   els.modeSliderBtn   = document.querySelector('#modeSliderBtn');
   els.modeSideBtn     = document.querySelector('#modeSideBtn');
   els.modeSingleBtn   = document.querySelector('#modeSingleBtn');
-
-  // Wire up Single mode toggle
   els.singleControls  = document.querySelector('#singleControls');
   els.photoScale = document.getElementById('photoScale');
   els.photoScaleOut = document.getElementById('photoScaleOut');
@@ -238,30 +230,83 @@ function autosizeTextarea(){
 }
 
 // Compute and apply the anchor position to sit just RIGHT of the side-by-side photos
-
-
 function positionDescNextToPhotos(){
-  const panel = els.descPanel || document.getElementById('descPanel');
-  if (panel && panel.closest('#controlsDockRightInner')) return;
-  // (kept) otherwise no-op
+  const anchor = document.getElementById('descDockAnchor');
+  const box = els.sideBySide || document.getElementById('sideBySideContainer');
+  if (!anchor || !box || box.classList.contains('hidden')) return;
+  const rect = box.getBoundingClientRect();
+  const gap = 12, panelW = 288; // 18rem
+  let left = Math.min(rect.right + gap, window.innerWidth - panelW - gap);
+  left = Math.max(gap, left);
+  const top = Math.max(gap, rect.top + gap);
+  Object.assign(anchor.style, { position:'fixed', left:left+'px', top:top+'px', width:panelW+'px', pointerEvents:'none' });
 }
-
-
-
 
 function dockDescNextToPhotos(){
-  // No-op: Notes live inside the right dock
-  try{ const s = (els.descPanel||document.getElementById('descPanel'))?.style; if (s){ s.position='static'; s.width='100%'; s.pointerEvents='auto'; } }catch(_){}
+  if (!els.descPanel) return;
+  // remember origin + inline style
+  if (!__descOrigParent){
+    __descOrigParent = els.descPanel.parentElement;
+    __descOrigNext = els.descPanel.nextElementSibling;
+    __descOrigStyle = els.descPanel.getAttribute('style') || '';
+  }
+
+  const { anchor } = ensureDescDockLayer();
+  anchor.appendChild(els.descPanel);
+  // Keep original visual styles; only ensure it's interactive
+  const s = els.descPanel.style;
+  s.position = 'static'; // anchored by fixed container
+  s.width = '18rem';
+  s.pointerEvents = 'auto';
+
+  // Textarea autosize
+  try{
+    const ta = document.getElementById('descriptionInput');
+    if (ta){ ta.addEventListener('input', autosizeTextarea, { passive:true }); setTimeout(autosizeTextarea, 0); }
+  }catch(e){}
+
+  // initial & deferred positioning
+  positionDescNextToPhotos();
+  requestAnimationFrame(()=>requestAnimationFrame(positionDescNextToPhotos));
+  setTimeout(positionDescNextToPhotos, 60);
+
+  // Observe photo box size changes
+  try {
+    if (window.ResizeObserver){
+      if (__descRO) { try{ __descRO.disconnect(); }catch(_){} }
+      __descRO = new ResizeObserver(()=>positionDescNextToPhotos());
+      const box = els.sideBySide || document.getElementById('sideBySideContainer');
+      if (box) __descRO.observe(box);
+    }
+  } catch(e){ console.warn('ResizeObserver failed', e); }
+
+  // reposition on image loads
+  [document.getElementById('beforeImgSide'), document.getElementById('afterImgSide')].forEach(img => {
+    if (!img) return;
+    img.addEventListener('load', positionDescNextToPhotos, { passive:true });
+  });
+
+  // window scroll/resize repositions
+  window.addEventListener('resize', positionDescNextToPhotos, { passive:true });
+  window.addEventListener('scroll',  positionDescNextToPhotos, { passive:true });
+
+  __descDocked = true;
 }
-
-
-
 
 function undockDescNextToPhotos(){
-  // No-op: keep Notes in the right dock
+  if (!__descDocked) return;
+  if (__descRO) { try{ __descRO.disconnect(); }catch(_){} __descRO = null; }
+  // restore panel back where it came from with original inline style
+  if (__descOrigParent){
+    if (__descOrigNext && __descOrigNext.parentElement === __descOrigParent){
+      __descOrigParent.insertBefore(els.descPanel, __descOrigNext);
+    } else {
+      __descOrigParent.appendChild(els.descPanel);
+    }
+  }
+  if (__descOrigStyle !== null) els.descPanel.setAttribute('style', __descOrigStyle);
+  __descDocked = false;
 }
-
-
 
 function _dockMoveSingleControls(){
   try{
@@ -300,29 +345,11 @@ function ensureTabRail(){
     if (!rail){
       rail = document.createElement('div');
       rail.id = 'tabRail';
-      rail.setAttribute('aria-label', 'Pages & Notes');
-
-rail.innerHTML = `\
-<div class="dock-section">
-  <div class="dock-header">
-    <h3 class="dock-title">Pages</h3>
-    <button id="tabAddBtn" class="tab-add" title="Add page" type="button">＋ Add page</button>
-  </div>
-  <p class="dock-help" id="pagesHelp">Each page is exported as a separate page in the PDF.</p>
-  <div id="tabList" class="tab-list" role="listbox" aria-labelledby="pagesHelp"></div>
-</div>
-<div class="dock-section">
-  <h3 class="dock-title">Notes</h3>
-  <aside id="descPanel" class="desc-panel px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur"
-         aria-label="Notes (max 140)">
-    <label for="descriptionInput" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Notes (max 140)</label>
-    <textarea id="descriptionInput" maxlength="400" class="flex-1 w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
-      placeholder="Write a short note..." maxlength="400"></textarea>
-    <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="descCount">0</span>/400</div>
-  </aside>
-</div>
-`;
-
+      rail.setAttribute('aria-label', 'Vergelijkingen');
+      rail.innerHTML = `
+        <div id="tabList" class="tab-list"></div>
+        <button id="tabAddBtn" class="tab-add" title="Nieuwe vergelijking">＋</button>
+      `;
     } else if (rail.parentElement && rail.parentElement !== hostNow){
       rail.parentElement.removeChild(rail);
     }
@@ -354,7 +381,7 @@ rail.innerHTML = `\
 
 function newTabName(){
   const n = (state.tabs?.length || 0) + 1;
-  return `Page ${n}`;
+  return `Vergelijking ${n}`;
 }
 function createTab(initial){
   const id = 't' + Date.now() + Math.random().toString(36).slice(2,7);
@@ -362,7 +389,7 @@ function createTab(initial){
     id, name: newTabName(),
     before: null, after: null,   // data URLs
     desc: '', slider: '50',
-    viewMode: state.viewMode || 'sideBySide',
+    viewMode: state.viewMode || 'slider',
     photoScale: state.photoScale || 100,
     canvasJSON: null, canvasSideJSON: null
   }, initial||{});
@@ -380,64 +407,29 @@ function serializeActiveTab(){
   try{ if (state.canvas) tab.canvasJSON = state.canvas.toJSON(); }catch(_){}
   try{ if (state.canvasSide) tab.canvasSideJSON = state.canvasSide.toJSON(); }catch(_){}
 }
-
-
-
-// Update Notes label/header to reflect the active tab
-function updateNotesHeader(tab){
-  try{
-    const lbl = document.querySelector('#descPanel label[for="descriptionInput"]');
-    if (lbl && tab && tab.name){
-      lbl.textContent = `Notes for ${tab.name} (max 400)`;
-    }
-  }catch(_){}
-}
 function applyTab(tab, opts={}){
   return new Promise(async (resolve) => {
     if (!tab) return resolve();
-    // Apply state
+    state.viewMode = tab.viewMode || 'slider';
     state.photoScale = tab.photoScale || 100;
-
-    // Switch view first (may rebuild DOM)
-    setViewMode(state.viewMode);
-    try{ cacheEls(); }catch(_){}
-
-    
-    try{ setViewMode(state.viewMode); }catch(_){ }
-    // Set simple fields
-    if (els.slider && typeof tab.slider !== 'undefined') els.slider.value = ''+tab.slider;
+    if (els.slider && tab.slider) els.slider.value = ''+tab.slider;
     if (els.descriptionInput) els.descriptionInput.value = tab.desc||'';
     if (els.descCount) els.descCount.textContent = String((tab.desc||'').length);
-
-    
-    try{ updateNotesHeader(tab); }catch(_){}
-// Assign images (blank if missing)
-    if (els.beforeImg)     els.beforeImg.src     = tab.before || '';
-    if (els.afterImg)      els.afterImg.src      = tab.after  || '';
-    if (els.beforeImgSide) els.beforeImgSide.src = tab.before || '';
-    if (els.afterImgSide)  els.afterImgSide.src  = tab.after  || '';
-
-    // Wait for images to settle
+    if (els.beforeImg && tab.before) els.beforeImg.src = tab.before;
+    if (els.afterImg && tab.after)  els.afterImg.src  = tab.after;
+    if (els.beforeImgSide && tab.before) els.beforeImgSide.src = tab.before;
+    if (els.afterImgSide  && tab.after)  els.afterImgSide.src  = tab.after;
+    setViewMode(state.viewMode);
+    updateHasImagesFlag?.();
+    // Wait images if needed
     const waitImg = (img) => (!img || img.complete) ? Promise.resolve() : new Promise(r => img.onload = r);
     await Promise.all([waitImg(els.beforeImg), waitImg(els.afterImg), waitImg(els.beforeImgSide), waitImg(els.afterImgSide)]);
-
-    // Restore / clear canvases
-    if (state.canvas) {
-      if (tab.canvasJSON) await new Promise(res => state.canvas.loadFromJSON(tab.canvasJSON, () => { try{ state.canvas.renderAll(); }catch(_){ } res(); }));
-      else { try{ state.canvas.clear(); state.canvas.renderAll(); }catch(_){ } }
-    }
-    if (state.canvasSide) {
-      if (tab.canvasSideJSON) await new Promise(res => state.canvasSide.loadFromJSON(tab.canvasSideJSON, () => { try{ state.canvasSide.renderAll(); }catch(_){ } res(); }));
-      else { try{ state.canvasSide.clear(); state.canvasSide.renderAll(); }catch(_){ } }
-    }
-
-    // Layout & flags
-    try{ updateHasImagesFlag(); }catch(_){}
-    try{ updateCanvasSize(); }catch(_){}
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{ try{ updateCanvasSize(); }catch(_){ } resolve(); }));
+    // Restore canvases
+    if (state.canvas && tab.canvasJSON) state.canvas.loadFromJSON(tab.canvasJSON, () => state.canvas.renderAll());
+    if (state.canvasSide && tab.canvasSideJSON) state.canvasSide.loadFromJSON(tab.canvasSideJSON, () => state.canvasSide.renderAll());
+    setTimeout(() => { try{ updateCanvasSize(); }catch(_){} resolve(); }, 0);
   });
 }
-
 function selectTab(id){
   if (state.activeTabId === id) return;
   serializeActiveTab();
@@ -478,13 +470,12 @@ function updateTabRail(){
   ensureTabRail();
   const list = document.getElementById('tabList');
   if (!list) return;
-  list.innerHTML = state.tabs.map((t, idx) => `
-  <button class="tab-item ${t.id===state.activeTabId?'active':''}" data-id="${t.id}" title="${t.name}" role="option">
-    <span class="tab-badge">${idx+1}</span>
-    <span class="tab-label">${t.name}</span>
-    <span class="tab-close" data-close="${t.id}" aria-label="Remove" title="Remove">×</span>
-  </button>
-`).join('');
+  list.innerHTML = state.tabs.map(t => `
+    <button class="tab-item ${t.id===state.activeTabId?'active':''}" data-id="${t.id}" title="${t.name}">
+      <span class="tab-label">${t.name}</span>
+      <span class="tab-close" data-close="${t.id}" aria-label="Verwijderen">×</span>
+    </button>
+  `).join('');
   highlightActiveTab();
   const add = document.getElementById('tabAddBtn');
   if (add) add.onclick = addTab;
@@ -505,8 +496,8 @@ function onTabRailClick(e){
 
 
 function bindUI(){
-  qs('beforeUpload').addEventListener('change', e => loadImage(e, 'before'));
-  qs('afterUpload').addEventListener('change', e => loadImage(e, 'after'));
+  qs('beforeUpload').addEventListener('change', e => loadImage(e, els.beforeImg));
+  qs('afterUpload').addEventListener('change', e => loadImage(e, els.afterImg));
 
   els.slider.addEventListener('input', () => {
     els.afterImg.style.clipPath = `inset(0 ${100 - els.slider.value}% 0 0)`;
@@ -540,11 +531,10 @@ function bindUI(){
   if (els.modeSliderBtn) els.modeSliderBtn.addEventListener('click', () => setViewMode('slider'));
   if (els.modeSideBtn)   els.modeSideBtn.addEventListener('click', () => setViewMode('sideBySide'));
   if (els.modeSingleBtn) els.modeSingleBtn.addEventListener('click', () => setViewMode('single'));
-  // Wire up Single mode Before/After radios (canonical)
-  if (els.singleBefore) els.singleBefore.addEventListener('change', () => { state.singleSource = 'before'; applyViewModeToDOM && applyViewModeToDOM(); if (typeof updateBadges==='function') updateBadges(); });
-  if (els.singleAfter)  els.singleAfter.addEventListener('change', () => { state.singleSource = 'after';  applyViewModeToDOM && applyViewModeToDOM(); if (typeof updateBadges==='function') updateBadges(); });
-  // Wire up Single mode Before/After radios
-// Restore title if present
+  if (els.singleBefore) els.singleBefore.addEventListener('change', () => { state.singleSource='before'; applyViewModeToDOM(); updateBadges(); });
+  if (els.singleAfter)  els.singleAfter.addEventListener('change',  () => { state.singleSource='after';  applyViewModeToDOM(); updateBadges(); });
+
+  // Restore title if present
   const saved = JSON.parse(localStorage.getItem('photocheckr_meta') || '{}');
   if (saved.title) els.title.value = saved.title;
   els.title.addEventListener('input', () => {
@@ -559,14 +549,6 @@ if (els.descriptionInput && els.descCount) {
 }
 }
 
-
-// Save notes live per active tab
-try{
-  els.descriptionInput.addEventListener('input', function(){
-    const t = state.tabs ? state.tabs.find(x => x.id===state.activeTabId) : null;
-    if (t){ t.desc = els.descriptionInput.value || ''; }
-  }, { passive: true });
-}catch(_){}
 function initCanvasWhenReady(){
   if (!fabricLoaded) { setTimeout(initCanvasWhenReady, 50); return; }
   els.beforeImg.onload = handleImageLoad;
@@ -597,12 +579,9 @@ function activeRedoStack(){ return state.viewMode === 'sideBySide' ? state.redoS
 
 function setViewMode(mode){
   state.viewMode = mode;
-  if (els.singleControls) els.singleControls.classList.toggle('hidden', mode !== 'single');
 
   // Reset annotations on mode switch
-  if (state.canvas) { state.canvas.clear();   try{ window.__singleFloating && window.__singleFloating.showHide(); }catch(e){}
-}
-
+  if (state.canvas) { state.canvas.clear(); }
   if (state.canvasSide) { state.canvasSide.clear(); }
   state.undoStack = []; state.redoStack = [];
   state.undoSide = []; state.redoSide = [];
@@ -618,8 +597,7 @@ function setViewMode(mode){
   if (els.singleControls) els.singleControls.classList.toggle('hidden', mode !== 'single');
 
   applyViewModeToDOM();
-  updateBadges();  try{ if (typeof setRootModeClass==='function') setRootModeClass(); }catch(e){}
-
+  updateBadges();
 }
 
 function applyViewModeToDOM(){
@@ -696,8 +674,6 @@ if (state.viewMode === 'slider' && els.slider && els.afterImg) {
   try{ setRootModeClass(); }catch(_){ }
 
   try{ ensureSingleControlsVisible(); }catch(_){ }
-
-  try{ updateCanvasSize(); }catch(_){ }
 }
 
 function updateCanvasSize(){
@@ -838,29 +814,22 @@ function redo(){
 }
 
 
-
 function setMode(mode){
   const canvas = activeCanvas();
   if (!canvas) return;
   state.currentMode = mode;
+  canvas.isDrawingMode = (mode === 'draw');
   if (mode === 'draw') {
     canvas.selection = false;
-    canvas.isDrawingMode = true;
-    if (!canvas.freeDrawingBrush) {
-      canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-    }
-    if (els.colorPicker && els.colorPicker.value) {
-      canvas.freeDrawingBrush.color = els.colorPicker.value;
-    }
-    const widthCtrl = (els.brushWidth && parseFloat(els.brushWidth.value)) || 2;
-    canvas.freeDrawingBrush.width = Math.max(1, Math.min(64, widthCtrl));
-    canvas.forEachObject(obj => obj.selectable = false);
+    canvas.discardActiveObject();
+    canvas.renderAll();
   } else {
     canvas.selection = true;
     canvas.isDrawingMode = false;
     canvas.forEachObject(obj => obj.selectable = true);
   }
 }
+
 window.setMode = setMode;
 
 function addText(){
@@ -946,280 +915,182 @@ function applyColor(){
 
 
 
-
-
 async function exportPDF(){
   if (!jsPDFLoaded) return alert('PDF library not loaded yet. Please try again.');
   const { jsPDF } = window.jspdf;
-  const filename = (els.title?.value?.trim() || 'PhotoCheckr_Export') + `.pdf`;
   const scale = parseInt(els.quality?.value || '2', 10);
-  // Boost scale for side-by-side to maintain per-panel sharpness
-  const effectiveScale = (state.viewMode === 'sideBySide') ? (parseInt(els.quality?.value || '2', 10) * 2) : parseInt(els.quality?.value || '2', 10);
   const pxToPt = 72 / 96;
+  const filename = (els.title?.value?.trim() || 'PhotoCheckr_Export') + `.pdf`;
+  let pdf = null;
 
-  function waitFrame(){ return new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); }
+  // Helper to render the CURRENT DOM state (one page) using existing logic:
+  async function renderCurrentPage() {
 
-  // Lock the stage size and hide description panel to avoid reflow during render
-  async function withStableStage(fn){
-    // --- Export-safety patch: detach description dock layer and pause its ResizeObserver ---
-    let _descLayer = document.getElementById('descDockLayer');
-    let _descLayerParent = _descLayer ? _descLayer.parentNode : null;
-    let _descNext = _descLayer && _descLayer.nextSibling ? _descLayer.nextSibling : null;
-    let _descRO = (typeof __descRO !== 'undefined') ? __descRO : null;
-    try { if (_descRO && _descRO.disconnect) _descRO.disconnect(); }catch(_){}
-    try { if (_descLayer && _descLayerParent) _descLayerParent.removeChild(_descLayer); }catch(_){}
+  if (!jsPDFLoaded) return alert('PDF library not loaded yet. Please try again.');
+  const { jsPDF } = window.jspdf;
+  const scale = parseInt(els.quality?.value || '2', 10); // 1x, 2x, 3x
+  const pxToPt = 72 / 96; // assume CSS pixel at 96 DPI
+  const filename = (els.title?.value?.trim() || 'PhotoCheckr_Export') + `.pdf`;
 
+  const makeTemp = (w, h) => {
+    const temp = document.createElement('canvas');
+    const dpr = (window.devicePixelRatio || 1);
+    temp.width  = Math.max(1, Math.round(w * scale * dpr));
+    temp.height = Math.max(1, Math.round(h * scale * dpr));
+    const ctx = temp.getContext('2d');
+    ctx.scale(scale * dpr, scale * dpr);
+    return { temp, ctx };
+  };
 
-    const wrap = els.wrapper || document.getElementById('imageWrapper');
-    const sbs  = els.sideBySide || document.getElementById('sideBySideContainer');
-    const panel= els.descPanel || document.getElementById('descPanel');
+  if (state.viewMode === 'slider') {
+    const baseW = state.canvas.width, baseH = state.canvas.height;
+    const outWpt = Math.round(baseW * scale * pxToPt);
+    const outHpt = Math.round(baseH * scale * pxToPt);
+    /* use outer pdf */
+    const { temp, ctx } = makeTemp(baseW, baseH);
 
-    const keep = [];
-    function lock(el){
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      keep.push([el, el.style.width, el.style.height, el.style.maxWidth, el.style.maxHeight, el.style.minHeight, el.style.minWidth, el.style.display]);
-      el.style.width = rect.width + 'px';
-      el.style.height = rect.height + 'px';
-      el.style.maxWidth = rect.width + 'px';
-      el.style.maxHeight= rect.height + 'px';
-      el.style.minWidth = rect.width + 'px';
-      el.style.minHeight= rect.height + 'px';
-    }
+    await drawImageScaled(ctx, els.beforeImg, { width: baseW, height: baseH });
+    ctx.save();
+    const clipWidth = baseW * (parseInt(els.slider.value,10) / 100);
+    ctx.beginPath(); ctx.rect(0, 0, clipWidth, baseH); ctx.clip();
+    await drawImageScaled(ctx, els.afterImg, { width: baseW, height: baseH });
+    ctx.restore();
 
-    lock(wrap); lock(sbs);
-    const prevDisp = panel ? panel.style.display : null;
-    if (panel) panel.style.display = 'none';
-    try { updateCanvasSize?.(); } catch(_){}
-    await waitFrame();
+    const ann = new Image();
+    ann.src = state.canvas.toDataURL({ format: 'png', multiplier: scale * (window.devicePixelRatio || 1), enableRetinaScaling: true });
+    await new Promise(r => ann.onload = r);
+    ctx.drawImage(ann, 0, 0, baseW, baseH);
 
-    try { return await fn(); }
-    finally {
-      // --- Restore description dock layer and its ResizeObserver ---
-      try {
-        if (_descLayer && _descLayerParent) {
-          if (_descNext) { _descLayerParent.insertBefore(_descLayer, _descNext); }
-          else { _descLayerParent.appendChild(_descLayer); }
-        }
-      }catch(_){}
-      try {
-        if (typeof ensureDescDockLayer === 'function') ensureDescDockLayer();
-        if (typeof positionDescNextToPhotos === 'function') positionDescNextToPhotos();
-      }catch(_){}
-      try { if (_descRO && typeof ResizeObserver !== 'undefined') {
-        // recreate a new observer and observe again
-        try{ _descRO.disconnect(); }catch(_){}
-        __descRO = new ResizeObserver(()=>positionDescNextToPhotos());
-        const box = els.sideBySide || document.getElementById('sideBySideContainer');
-        if (box) __descRO.observe(box);
-      }}catch(_){}
-
-      // restore
-      if (panel) panel.style.display = prevDisp || '';
-      for (const [el, w, h, mw, mh, mih, miw, disp] of keep){
-        el.style.width = w||''; el.style.height = h||''; el.style.maxWidth=mw||''; el.style.maxHeight=mh||''; el.style.minHeight=mih||''; el.style.minWidth=miw||''; el.style.display = disp||'';
-      }
-      try { updateCanvasSize?.(); } catch(_){}
-      await waitFrame();
-    }
-  }
-
-  // Helper to render current DOM to a page; uses viewMode and canvases
-  async function renderCurrentPage(){
-    // Base size
-    let baseW = state.canvas?.width || els.beforeImg?.naturalWidth || 1200;
-  
-  let baseH = state.canvas?.height || els.beforeImg?.naturalHeight || 800;
-
-    // Clamp aspect for side-by-side to prevent super-wide pages (v2)
-    if ((state.viewMode||'slider') === 'sideBySide') {
-      // Keep a reasonable landscape ratio based on height (avoid ultra-wide)
-      const minRatio = 1.3, maxRatio = 1.8;
-      const target = Math.round(Math.max(baseH * minRatio, Math.min(baseH * maxRatio, baseW)));
-      baseW = target;
-    }
-    const make = () => {
-      const temp = document.createElement('canvas');
-      const dpr = (window.devicePixelRatio || 1);
-      temp.width  = Math.max(1, Math.round(baseW * effectiveScale * dpr));
-      temp.height = Math.max(1, Math.round((baseH + 40) * effectiveScale * dpr));
-      const ctx = temp.getContext('2d');
-      ctx.scale(effectiveScale * dpr, effectiveScale * dpr);
-      return { temp, ctx };
-    };
-    async function drawScaled(ctx, img, size){
-      if (!img || !img.src) return;
-      await new Promise(res => { if (img.complete) return res(); img.onload = res; });
-      const w = size?.width  || baseW;
-      const h = size?.height || baseH;
-      const hRatio = w / (img.naturalWidth  || 1);
-      const vRatio = h / (img.naturalHeight || 1);
-      const ratio  = Math.min(hRatio, vRatio);
-      const cx = (w - (img.naturalWidth  || 0) * ratio) / 2;
-      const cy = (h - (img.naturalHeight || 0) * ratio) / 2;
-      ctx.drawImage(img, 0, 0, img.naturalWidth||0, img.naturalHeight||0, cx, cy, (img.naturalWidth||0)*ratio, (img.naturalHeight||0)*ratio);
-    }
-
-    const vm = state.viewMode;
-    const { temp, ctx } = make();
-    ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, baseW, baseH + 40);
-
-    if (vm === 'slider') {
-      await drawScaled(ctx, els.beforeImg, { width: baseW, height: baseH });
-      // Clip AFTER according to slider value
-      const pct = Math.max(0, Math.min(100, parseInt(els.slider?.value||'50',10)));
-      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, (pct/100)*baseW, baseH); ctx.clip();
-      await drawScaled(ctx, els.afterImg,  { width: baseW, height: baseH });
-      ctx.restore();
-      if (state.canvas){
-        const ann = new Image();
-        ann.src = state.canvas.toDataURL({ format: 'png', multiplier: (window.devicePixelRatio||1), enableRetinaScaling: true });
-        await new Promise(r => ann.onload = r);
-        ctx.drawImage(ann, 0, 0, baseW, baseH);
-      }
-    } else if (vm === 'sideBySide') {
-      ctx.save(); ctx.beginPath(); ctx.rect(0, 0, baseW/2, baseH); ctx.clip();
-      await drawScaled(ctx, els.beforeImg, { width: baseW/2, height: baseH }); ctx.restore();
-      ctx.save(); ctx.translate(baseW/2, 0); ctx.beginPath(); ctx.rect(0, 0, baseW/2, baseH); ctx.clip();
-      await drawScaled(ctx, els.afterImg,  { width: baseW/2, height: baseH }); ctx.restore();
-      if (state.canvasSide){
-        const ann = new Image();
-        ann.src = state.canvasSide.toDataURL({ format: 'png', multiplier: (window.devicePixelRatio||1), enableRetinaScaling: true });
-        await new Promise(r => ann.onload = r);
-        ctx.drawImage(ann, 0, 0, baseW, baseH);
-      }
+    const combined = temp.toDataURL('image/png');
+    
+    // Ensure outer PDF exists with correct page size/orientation
+    const _orient = outWpt >= outHpt ? 'landscape' : 'portrait';
+    if (!pdf){
+      pdf = new jsPDF({ orientation: _orient, unit: 'pt', format: [outWpt, outHpt + 40], compress: true });
     } else {
-      const srcImg = state.singleSource === 'after' ? els.afterImg : els.beforeImg;
-      await drawScaled(ctx, srcImg, { width: baseW, height: baseH });
-      if (state.canvas){
-        const ann = new Image();
-        ann.src = state.canvas.toDataURL({ format: 'png', multiplier: (window.devicePixelRatio||1), enableRetinaScaling: true });
-        await new Promise(r => ann.onload = r);
-        ctx.drawImage(ann, 0, 0, baseW, baseH);
-      }
+      pdf.addPage([outWpt, outHpt + 40], _orient);
     }
+    
+    pdf.addImage(combined, 'PNG', 0, 20, outWpt, outHpt, undefined, 'FAST');
+    pdf.setFontSize(16); pdf.text(els.title?.value?.trim() || 'PhotoCheckr Export', 10, 15);
+    // deferred save;
+    return;
+  }
 
- // --- Right-side notes column (pixel-accurate, no cropping) ---
-const descText = (els.descriptionInput && (els.descriptionInput.value || '').trim()) || '';
-const colWcss = descText ? Math.round(200 * (96 / 72)) : 0; // 200pt → CSS px (~267px)
+  if (state.viewMode === 'single') {
+    const baseW = state.canvas.width, baseH = state.canvas.height;
+    const outWpt = Math.round(baseW * scale * pxToPt);
+    const outHpt = Math.round(baseH * scale * pxToPt);
+    /* use outer pdf */
+    const { temp, ctx } = makeTemp(baseW, baseH);
 
-if (colWcss) {
-  // Belangrijk: werk in *pixels* van de broncanvas, niet in CSS units
-  // temp.width/height zijn al hiDPI (effectiveScale * devicePixelRatio) keer zo groot.
-  const dpr = window.devicePixelRatio || 1;
-  const pxScale = effectiveScale * dpr; // pixels per CSS px in 'temp'
-  const colWpx  = Math.round(colWcss * pxScale);
+    const srcImg = state.singleSource === 'after' ? els.afterImg : els.beforeImg;
+    await drawImageScaled(ctx, srcImg, { width: baseW, height: baseH });
 
-  // Nieuwe canvas heeft oude breedte + kolom, zelfde hoogte
-  const newTemp = document.createElement('canvas');
-  newTemp.width  = temp.width + colWpx;
-  newTemp.height = temp.height;
+    const ann = new Image();
+    ann.src = state.canvas.toDataURL({ format: 'png', multiplier: scale * (window.devicePixelRatio || 1), enableRetinaScaling: true });
+    await new Promise(r => ann.onload = r);
+    ctx.drawImage(ann, 0, 0, baseW, baseH);
 
-  const newCtx = newTemp.getContext('2d', { willReadFrequently: false });
-
-  // Witte achtergrond
-  newCtx.fillStyle = '#fff';
-  newCtx.fillRect(0, 0, newTemp.width, newTemp.height);
-
-  // Kopieer de *hele* oude canvas 1:1 (geen schaal op context!)
-  newCtx.drawImage(temp, 0, 0);
-
-  // Verticale scheidslijn precies aan de rand van het beeldgedeelte
-  const dividerX = temp.width;
-  newCtx.strokeStyle = 'rgba(0,0,0,0.35)';
-  newCtx.lineWidth = 1;                     // 1 fysieke pixel
-  newCtx.beginPath();
-  newCtx.moveTo(dividerX + 0.5, 0);         // +0.5 = crisp line
-  newCtx.lineTo(dividerX + 0.5, temp.height);
-  newCtx.stroke();
-
-  // Tekstlayout in *pixels* (hiDPI-safe)
-  const marginCss = 12;
-  const textCssY  = 16;
-  const lineCss   = 18; // line-height
-
-  const marginPx = Math.round(marginCss * pxScale);
-  const textXpx  = dividerX + marginPx;
-  const textYpx  = Math.round(textCssY * pxScale);
-  const textWpx  = Math.max(0, colWpx - marginPx * 2);
-
-  newCtx.fillStyle = '#000';
-  newCtx.textBaseline = 'top';
-  newCtx.font = `${Math.round(14 * pxScale)}px Helvetica, Arial, sans-serif`;
-
-  // Eenvoudige word-wrap in pixelruimte
-  const words = descText.split(/\s+/);
-  let line = '';
-  let y = textYpx;
-  const lineHeightPx = Math.round(lineCss * pxScale);
-
-  for (let i = 0; i < words.length; i++) {
-    const test = line ? (line + ' ' + words[i]) : words[i];
-    const w = newCtx.measureText(test).width;
-    if (w > textWpx && line) {
-      newCtx.fillText(line, textXpx, y);
-      y += lineHeightPx;
-      line = words[i];
+    const combined = temp.toDataURL('image/png');
+    
+    // Ensure outer PDF exists with correct page size/orientation
+    const _orient = outWpt >= outHpt ? 'landscape' : 'portrait';
+    if (!pdf){
+      pdf = new jsPDF({ orientation: _orient, unit: 'pt', format: [outWpt, outHpt + 40], compress: true });
     } else {
-      line = test;
+      pdf.addPage([outWpt, outHpt + 40], _orient);
     }
-  }
-  if (line) newCtx.fillText(line, textXpx, y);
-
-  // Swap: vervang temp door de nieuwe canvas met kolom
-  temp.width = newTemp.width;
-  temp.height = newTemp.height;
-  const ctx2 = temp.getContext('2d');
-  ctx2.drawImage(newTemp, 0, 0);
-}
-   
-  
-// Output sizes in pt
-    const outWpt = temp.width * pxToPt; const outHpt = temp.height * pxToPt;
-    return { dataURL: temp.toDataURL('image/png'), outWpt, outHpt, orient: (outWpt>=outHpt ? 'landscape' : 'portrait') };
+    
+    pdf.addImage(combined, 'PNG', 0, 20, outWpt, outHpt, undefined, 'FAST');
+    pdf.setFontSize(16); pdf.text(els.title?.value?.trim() || 'PhotoCheckr Export', 10, 15);
+    // deferred save;
+    return;
   }
 
-  // Export flow
-  const pages = [];
-  const originalId = state.activeTabId || (state.tabs[0]?.id);
-  try { serializeActiveTab(); } catch(_){}
+  if (state.viewMode === 'sideBySide') {
+    const rect = els.sideBySide.getBoundingClientRect();
+    const baseW = Math.max(1, Math.round(rect.width));
+    const baseH = Math.max(1, Math.round(rect.height));
+    const outWpt = Math.round(baseW * scale * pxToPt);
+    const outHpt = Math.round(baseH * scale * pxToPt);
+    const descText = (els.descriptionInput && els.descriptionInput.value.trim()) || '';
+const descWpt = descText ? 180 : 0;
+/* use outer pdf */
+    const { temp, ctx } = makeTemp(baseW, baseH);
 
-  if (Array.isArray(state.tabs) && state.tabs.length > 1){
-    for (let i=0;i<state.tabs.length;i++){
+    // Left: before
+    ctx.save();
+    ctx.translate(0, 0);
+    await drawImageScaled(ctx, els.beforeImg, { width: baseW/2, height: baseH });
+    ctx.restore();
+
+    // Right: after
+    ctx.save();
+    ctx.translate(baseW/2, 0);
+    await drawImageScaled(ctx, els.afterImg, { width: baseW/2, height: baseH });
+    ctx.restore();
+
+    if (state.canvasSide) {
+      const ann = new Image();
+      ann.src = state.canvasSide.toDataURL({ format: 'png', multiplier: scale * (window.devicePixelRatio || 1), enableRetinaScaling: true });
+      await new Promise(r => ann.onload = r);
+      ctx.drawImage(ann, 0, 0, baseW, baseH);
+    }
+
+    const combined = temp.toDataURL('image/png');
+    
+    // Ensure outer PDF exists with correct page size/orientation
+    const _orient = outWpt >= outHpt ? 'landscape' : 'portrait';
+    if (!pdf){
+      pdf = new jsPDF({ orientation: _orient, unit: 'pt', format: [outWpt, outHpt + 40], compress: true });
+    } else {
+      pdf.addPage([outWpt, outHpt + 40], _orient);
+    }
+    
+    pdf.addImage(combined, 'PNG', 0, 20, outWpt, outHpt, undefined, 'FAST');
+    pdf.setFontSize(16); pdf.text(els.title?.value?.trim() || 'PhotoCheckr Export', 10, 15);
+
+    // PATCH: draw description panel on the right (if any)
+    if (typeof descText !== 'undefined' && descText) {
+      const x = outWpt + 5; const yTop = 20; const w = 175; const yBottom = outHpt;
+      pdf.setDrawColor(180); pdf.setLineWidth(0.5); pdf.line(outWpt, 0, outWpt, outHpt + 40);
+      pdf.setFontSize(12);
+      const wrapped = pdf.splitTextToSize(descText, w - 10);
+      pdf.text(wrapped, x + 5, yTop + 10, { align: 'left', baseline: 'top' });
+    }
+    // deferred save;
+    return;
+  }
+
+  alert('Unknown view mode for PDF export.');
+
+  }
+
+  // If multiple tabs, iterate:
+  const hasTabs = Array.isArray(state.tabs) && state.tabs.length > 0;
+  if (hasTabs) {
+    const originalId = state.activeTabId;
+    for (let i = 0; i < state.tabs.length; i++) {
       const tab = state.tabs[i];
-      await withStableStage(async ()=> {
-        await applyTab(tab, { forExport: true });
-        const page = await renderCurrentPage();
-        if (page?.dataURL) pages.push(page);
-      });
+      await serializeActiveTab();
+      await applyTab(tab, { forExport: true });
+      await renderCurrentPage();
+      if (i < state.tabs.length - 1) pdf.addPage();
     }
-    // restore original tab
+    // Restore original tab
     const restore = state.tabs.find(t=>t.id===originalId) || state.tabs[0];
     await applyTab(restore);
-  } else {
-    await withStableStage(async ()=> {
-      const page = await renderCurrentPage();
-      if (page?.dataURL) pages.push(page);
-    });
+    // deferred save
+    return;
   }
 
-  if (!pages.length) { alert('Niets om te exporteren: voeg eerst afbeeldingen toe.'); return; }
+  // Fallback: single current page
+  await renderCurrentPage();
+  // deferred save
 
-  // Assemble PDF with explicit size per page
-  let pdf = null;
-  for (let i=0;i<pages.length;i++){
-    const p = pages[i];
-    if (!pdf){
-      pdf = new jsPDF({ orientation: p.orient, unit: 'pt', format: [p.outWpt, p.outHpt], compress: true });
-    } else {
-      pdf.addPage([p.outWpt, p.outHpt], p.orient);
-    }
-    pdf.addImage(p.dataURL, 'PNG', 0, 0, p.outWpt, p.outHpt, undefined, 'FAST');
-  }
-  try { pdf.save(filename); } catch(e){ console.warn(e); }
+  try{ if (pdf) pdf.save(filename); }catch(_){}
 }
-
-
 
 
 
@@ -1246,14 +1117,14 @@ function drawImageScaled(ctx, img, sizeOrCanvas) {
 }
 
 
-function loadImage(evt, kind){
+function loadImage(evt, target){
   const file = evt.target.files[0];
   if (!file) return;
   const url = URL.createObjectURL(file); // fast preview
-  const target = (kind==='after') ? els.afterImg : els.beforeImg;
-  const targetSide = (kind==='after') ? els.afterImgSide : els.beforeImgSide;
-  if (target){ target.onload = () => { updateCanvasSize(); target.onload = null; }; target.src = url; }
-  if (targetSide) targetSide.src = url;
+  target.onload = () => { updateCanvasSize(); target.onload = null; };
+  target.src = url;
+  if (target === els.beforeImg && els.beforeImgSide) els.beforeImgSide.src = url;
+  if (target === els.afterImg  && els.afterImgSide)  els.afterImgSide.src  = url;
 
   // Persist to active tab as dataURL for reliability (export & save)
   const reader = new FileReader();
@@ -1262,7 +1133,8 @@ function loadImage(evt, kind){
     if (state.activeTabId){
       const tab = state.tabs.find(t => t.id===state.activeTabId);
       if (tab){
-        if (kind==='before') tab.before = dataURL; if (kind==='after') tab.after = dataURL;
+        if (target===els.beforeImg) tab.before = dataURL;
+        if (target===els.afterImg)  tab.after  = dataURL;
       }
     }
     try{ updateHasImagesFlag(); }catch(_){}
@@ -1270,7 +1142,6 @@ function loadImage(evt, kind){
   reader.readAsDataURL(file);
 
   updateCanvasSize();
-  try{ evt.target.value = ''; }catch(_){}
 }
 
 
@@ -1481,11 +1352,10 @@ function setupControlsDockRight(){
     let rail = document.getElementById('tabRail');
     const host = document.getElementById('controlsDockRightInner');
     if (!rail){
-      
-// Delegate creation to ensureTabRail (builds Pages & Notes UI)
-try{ ensureTabRail(); }catch(_){}
-rail = document.getElementById('tabRail');
-
+      rail = document.createElement('div');
+      rail.id = 'tabRail';
+      rail.setAttribute('aria-label', 'Vergelijkingen');
+      rail.innerHTML = '<div id="tabList" class="tab-list"></div><button id="tabAddBtn" class="tab-add" title="Nieuwe vergelijking">＋</button>';
     } else {
       // Detach from previous parent
       if (rail.parentElement && rail.parentElement !== host){
@@ -1578,70 +1448,6 @@ function ensureSingleControlsDockedAndVisibility(){
   }
 })();
 // Also run on DOM ready just in case
-
-// === Floating Single-mode Before/After toggle (bottom) ===
-function installSingleFloatingControls(){
-  try{
-    let box = document.getElementById('singleControlsFloating');
-    if (!box){
-      box = document.createElement('div');
-      box.id = 'singleControlsFloating';
-      box.innerHTML = [
-        '<label><input type="radio" name="singleSourceFloating" value="before"> <span>Before</span></label>',
-        '<label><input type="radio" name="singleSourceFloating" value="after"> <span>After</span></label>'
-      ].join('');
-      var dock = document.getElementById('controlsDockLeftInner');
-      if (dock && box.parentElement !== dock) dock.appendChild(box);
-      else document.body.appendChild(box);
-    }
-    const before = box.querySelector('input[value="before"]');
-    const after  = box.querySelector('input[value="after"]');
-
-    function syncRadios(){
-      const which = (window.state && state.singleSource) || 'before';
-      if (before) before.checked = (which === 'before');
-      if (after)  after.checked  = (which === 'after');
-    }
-    function showHide(){
-      // keep pill under left dock if available
-      var dock = document.getElementById('controlsDockLeftInner');
-      if (dock && box.parentElement !== dock) { try{ dock.appendChild(box); }catch(_){} }
-
-      const isSingle = !!(window.state && state.viewMode === 'single');
-      box.style.display = isSingle ? 'flex' : 'none';
-      if (isSingle) syncRadios();
-    }
-    // (Re)bind listeners (clone trick to avoid double-binding)
-    if (before){
-      const b2 = before.cloneNode(true);
-      before.parentNode.replaceChild(b2, before);
-      b2.addEventListener('change', () => {
-        if (window.state) state.singleSource = 'before';
-        if (typeof applyViewModeToDOM === 'function') applyViewModeToDOM();
-        if (typeof updateBadges === 'function') updateBadges();
-        syncRadios();
-      });
-    }
-    if (after){
-      const a2 = after.cloneNode(true);
-      after.parentNode.replaceChild(a2, after);
-      a2.addEventListener('change', () => {
-        if (window.state) state.singleSource = 'after';
-        if (typeof applyViewModeToDOM === 'function') applyViewModeToDOM();
-        if (typeof updateBadges === 'function') updateBadges();
-        syncRadios();
-      });
-    }
-
-    // initial state
-    syncRadios();
-    showHide();
-
-    // expose helpers so we can call on mode changes
-    window.__singleFloating = { showHide, syncRadios };
-  }catch(e){ console.warn('installSingleFloatingControls failed', e); }
-}
-
 document.addEventListener('DOMContentLoaded', function(){
   try{ ensureSingleControlsDockedAndVisibility(); }catch(_){}
 });
@@ -1724,221 +1530,4 @@ function ensureSingleControlsInDockAndVisible(){
     sc.style.pointerEvents = 'auto';
   }catch(e){ /* no-op */ }
 }
-
-
-
-// __forcedDockInit__ : guarantee the docks render even if earlier init fails
-window.addEventListener('DOMContentLoaded', () => {
-  try { setupControlsDockLeft(); } catch(e){ console.warn('Left dock init failed', e); }
-  try { setupControlsDockRight(); } catch(e){ console.warn('Right dock init failed', e); }
-  try { ensureTabRail(); } catch(e){ console.warn('ensureTabRail failed', e); }
-  try { updateTabRail(); } catch(e){ console.warn('updateTabRail failed', e); }
-});
-/* __forcedDockInit__ */
-
-
-// === PATCH: Right dock drag+resize (free move, final) ===
-(function enableRightDockFreeMoveFinal(){
-  try{
-    // Ensure dock exists (created by setupControlsDockRight in your code)
-    let dock = document.getElementById('controlsDockRight');
-    if (!dock){ try{ setupControlsDockRight(); dock = document.getElementById('controlsDockRight'); }catch(_){ } }
-    const inner = document.getElementById('controlsDockRightInner');
-    if (!dock || !inner) return;
-
-    let currentTop = null; // track user's intended top
-
-    // Constants/util
-    const PAD = 8, MIN_W = 280, MAX_W = 720, KEY = 'rightDock@pos';
-    const clamp = (v,min,max) => Math.min(Math.max(v,min),max);
-    const readSaved = () => { try{ return JSON.parse(localStorage.getItem(KEY) || '{}'); }catch(_){ return {}; } };
-    const persist = (pos) => { try{ localStorage.setItem(KEY, JSON.stringify(pos)); }catch(_){ } };
-
-    // Anchor by LEFT (not RIGHT)
-    dock.style.right = 'auto';
-
-    // Initial placement from saved values (if any)
-    const rect0 = inner.getBoundingClientRect();
-    const defaultLeft = Math.max(PAD, window.innerWidth - (rect0.width || 320) - PAD);
-    const saved0 = readSaved();
-    const initLeft = (typeof saved0.l === 'number') ? clamp(saved0.l, PAD, Math.max(PAD, window.innerWidth - (rect0.width||320) - PAD)) : defaultLeft;
-    dock.style.left = initLeft + 'px';
-    if (typeof saved0.w === 'number'){
-      inner.style.width = clamp(saved0.w, MIN_W, Math.max(MIN_W, Math.min(MAX_W, window.innerWidth - 2*PAD))) + 'px';
-    }
-
-    // Ensure top follows saved value whenever layout reflows
-    function applySavedTop(){
-      const s = readSaved();
-      if (typeof s.t === 'number'){
-        const t = clamp(s.t, PAD, Math.max(PAD, window.innerHeight - 120));
-        dock.style.setProperty('top', t + 'px', 'important');
-      }
-    }
-    applySavedTop();
-
-    // Guard: if anything else resets top, re-apply our currentTop
-    const mo = new MutationObserver(()=>{
-      if (currentTop != null) {
-        const now = parseFloat(dock.style.top || '0')||0;
-        if (Math.abs(now - currentTop) > 0.5) {
-          dock.style.setProperty('top', currentTop + 'px', 'important');
-        }
-      }
-    });
-    mo.observe(dock, { attributes: true, attributeFilter: ['style'] });
-    mo.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
-    window.addEventListener('resize', applySavedTop, { passive:true });
-    window.addEventListener('orientationchange', applySavedTop, { passive:true });
-
-    // Inject handles
-    if (!inner.querySelector('.dock__drag-handle')){
-      const drag = document.createElement('div');
-      drag.className = 'dock__drag-handle';
-      drag.setAttribute('aria-label', 'Sleep om te verplaatsen');
-      drag.innerHTML = '<span class="dock__drag-grip" aria-hidden="true">⋮⋮</span>';
-      inner.prepend(drag);
-    }
-    if (!inner.querySelector('.dock__resize-handle')){
-      const res = document.createElement('div');
-      res.className = 'dock__resize-handle';
-      res.setAttribute('aria-label', 'Sleep om te vergroten/verkleinen');
-      inner.prepend(res);
-    }
-
-    // Dragging (X+Y)
-    const dragHandle = inner.querySelector('.dock__drag-handle');
-    let dragging = false, dragStart = null;
-    dragHandle.addEventListener('pointerdown', (e)=>{
-      if (e.button !== 0) return;
-      dragging = true;
-      dragHandle.setPointerCapture(e.pointerId);
-      dragHandle.classList.add('is-active');
-      const rect = dock.getBoundingClientRect();
-      const t = parseFloat(dock.style.top || rect.top || 0) || 0;
-      const l = parseFloat(dock.style.left || rect.left || 0) || 0;
-      dragStart = { x: e.clientX, y: e.clientY, t, l };
-      currentTop = t;
-      e.preventDefault();
-    });
-    dragHandle.addEventListener('pointermove', (e)=>{
-      if (!dragging) return;
-      const dx = e.clientX - dragStart.x;
-      const dy = e.clientY - dragStart.y;
-      const rect = inner.getBoundingClientRect();
-      const maxL = Math.max(PAD, window.innerWidth - rect.width - PAD);
-      const maxT = Math.max(PAD, window.innerHeight - 120);
-      const newLeft = clamp(dragStart.l + dx, PAD, maxL);
-      const newTop  = clamp(dragStart.t + dy, PAD, maxT);
-      dock.style.left = newLeft + 'px';
-      dock.style.setProperty('top', newTop + 'px', 'important'); // override any CSS var
-      currentTop = newTop;
-      dock.style.right = 'auto';
-    });
-    const endDrag = (e)=>{
-      if (!dragging) return;
-      dragging = false;
-      dragHandle.classList.remove('is-active');
-      const t = parseFloat(dock.style.top || '0') || 0;
-      const l = parseFloat(dock.style.left || '0') || 0;
-      const curr = readSaved();
-      persist({ ...curr, t, l });
-      currentTop = t;
-      // Trigger applySavedTop after layout listeners fire
-      window.dispatchEvent(new Event('resize'));
-    };
-    dragHandle.addEventListener('pointerup', endDrag);
-    dragHandle.addEventListener('pointercancel', endDrag);
-
-    // Resizing (from left edge)
-    const resHandle = inner.querySelector('.dock__resize-handle');
-    let resizing = false, resStart = null;
-    resHandle.addEventListener('pointerdown', (e)=>{
-      if (e.button !== 0) return;
-      resizing = true;
-      resHandle.setPointerCapture(e.pointerId);
-      resHandle.classList.add('is-active');
-      const rect = inner.getBoundingClientRect();
-      resStart = { x: e.clientX, w: rect.width };
-      e.preventDefault();
-    });
-    resHandle.addEventListener('pointermove', (e)=>{
-      if (!resizing) return;
-      const dx = e.clientX - resStart.x;
-      const maxW = Math.max(MIN_W, Math.min(MAX_W, window.innerWidth - 2*PAD));
-      const newW = clamp(resStart.w - dx, MIN_W, maxW);
-      inner.style.width = newW + 'px';
-      const rectDock = dock.getBoundingClientRect();
-      const rectInner = inner.getBoundingClientRect();
-      const w = rectDock.width || rectInner.width || newW;
-      try{ document.documentElement.style.setProperty('--dock-right-w', w + 'px'); }catch(_){}
-    });
-    const endResize = (e)=>{
-      if (!resizing) return;
-      resizing = false;
-      resHandle.classList.remove('is-active');
-      const rect = inner.getBoundingClientRect();
-      const curr = readSaved();
-      persist({ ...curr, w: Math.round(rect.width) });
-      window.dispatchEvent(new Event('resize'));
-    };
-    resHandle.addEventListener('pointerup', endResize);
-    resHandle.addEventListener('pointercancel', endResize);
-
-    // Keep within viewport on resize
-    window.addEventListener('resize', ()=>{
-      const curr = readSaved();
-      const rect = inner.getBoundingClientRect();
-      const maxTop = Math.max(PAD, window.innerHeight - 120);
-      const maxLeft = Math.max(PAD, window.innerWidth - rect.width - PAD);
-      const maxW = Math.max(MIN_W, Math.min(MAX_W, window.innerWidth - 2*PAD));
-      let changed = false;
-      if (typeof curr.t === 'number'){
-        const t = clamp(curr.t, PAD, maxTop);
-        dock.style.setProperty('top', t + 'px', 'important');
-        if (t !== curr.t){ curr.t = t; changed = true; }
-      }
-      if (typeof curr.l === 'number'){
-        const l = clamp(curr.l, PAD, maxLeft);
-        dock.style.left = l + 'px';
-        dock.style.right = 'auto';
-        if (l !== curr.l){ curr.l = l; changed = true; }
-      }
-      if (typeof curr.w === 'number'){
-        const w = clamp(curr.w, MIN_W, maxW);
-        inner.style.width = w + 'px';
-        try{ document.documentElement.style.setProperty('--dock-right-w', w + 'px'); }catch(_){}
-        if (w !== curr.w){ curr.w = w; changed = true; }
-      }
-      if (changed) persist(curr);
-    }, { passive: true });
-
-  }catch(e){ console.warn('[dock drag/resize]', e); }
-})();
-
-/* === THEME: harden single mode === */
-(function(){
-  try {
-    const html = document.documentElement;
-    html.classList.remove('dark');
-    html.classList.remove('light'); // we don't need light/dark classes anymore
-  } catch(e){}
-})();
-
-/* === Remove any leftover dark-mode toggles at runtime (safety net) === */
-(function(){
-  try{
-    const selectors = [
-      '#modeToggle',
-      '#mode-toggle',
-      '[data-role="theme-toggle"]',
-      '[data-action="toggleTheme"]',
-      '[aria-label*="Dark"]',
-      '[aria-label*="Theme"]'
-    ];
-    selectors.forEach(sel => {
-      document.querySelectorAll(sel).forEach(el => el.remove());
-    });
-  }catch(e){}
-})();
 

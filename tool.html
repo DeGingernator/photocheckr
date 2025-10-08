@@ -6,10 +6,9 @@
   <link rel="preconnect" href="https://cdn.tailwindcss.com">
   
   <link rel="prefetch" href="assets/nav.html"><link rel="prefetch" href="assets/footer.html">
-  <title>PhotoCheckr - Tool</title>
-  <script>tailwind.config = { darkMode: "class" }</script>
-  <script>tailwind = { config: { darkMode: "class" } }</script>
+  <title>YmageCheckr - Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class" };</script>
   <link rel="stylesheet" href="assets/styles.css">
   <script type="module" src="assets/tool.js"></script>
 
@@ -30,8 +29,9 @@
   </button><ul id="navMenu" class="hidden md:flex space-x-6 text-gray-700 dark:text-gray-700 dark:text-gray-700 dark:text-gray-300 mt-3 md:mt-0" role="menubar">
     <li role="none"><a role="menuitem" href="index.html" data-nav="home" class="hover:text-blue-400">Home</a></li>
     <li role="none"><a role="menuitem" href="tool.html" data-nav="tool" class="hover:text-blue-400">Tool</a></li>
-    <li role="none"><a role="menuitem" href="about.html" data-nav="about" class="hover:text-blue-400">About</a></li>
-    <li role="none"><a role="menuitem" href="pricing.html" data-nav="pricing" class="hover:text-blue-400">Pricing</a></li>
+    <li role="none"><a href="3d-tool.html" class="hover:text-blue-400">3D Tool</a>
+<a role="menuitem" href="about.html" data-nav="about" class="hover:text-blue-400">About</a></li>
+    
   </ul><button id="mode-toggle" class="flex items-center gap-1 px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-500 dark:bg-gray-300 dark:text-gray-800 dark:hover:bg-gray-200 transition"><span id="mode-icon">🌙</span><span id="mode-text">Dark</span></button></div>
 </nav></div>
 
@@ -46,24 +46,29 @@
 
       <div class="flex items-center gap-3">
         <!-- Slider -->
-        <div class="mode-item"><button id="modeSliderBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="true" role="tab" title="Slider" aria-label="Slider">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-            <rect x="3" y="4" width="8" height="16" rx="2" opacity="0.4"></rect>
-            <rect x="13" y="4" width="8" height="16" rx="2"></rect>
-          </svg>
+        <div class="mode-item"><button id="modeSliderBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="true" role="tab" aria-label="Overlay slider: compare two photos with a draggable divider." data-tip="Overlay slider: compare two photos with a draggable divider.">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <rect x="3" y="4" width="8" height="16" rx="2"></rect>
+  <rect x="13" y="4" width="8" height="16" rx="2"></rect>
+  <line x1="12" y1="4" x2="12" y2="20"></line>
+  <circle cx="12" cy="12" r="2.6"></circle>
+  <polyline points="9,12 10.5,10.5 10.5,13.5 9,12"></polyline>
+  <polyline points="15,12 13.5,10.5 13.5,13.5 15,12"></polyline>
+</svg>
         </button><div class="mode-caption-outside">Slider</div></div>
         <!-- Side by Side -->
-        <div class="mode-item"><button id="modeSideBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" title="Side by Side" aria-label="Side-by-Side">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-            <rect x="3" y="4" width="8" height="16" rx="2"></rect>
-            <rect x="13" y="4" width="8" height="16" rx="2" opacity="0.4"></rect>
-          </svg>
+        <div class="mode-item"><button id="modeSideBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" aria-label="Side-by-side: view two photos next to each other." data-tip="Side-by-side: view two photos next to each other.">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <rect x="3" y="4" width="8" height="16" rx="2"></rect>
+  <rect x="13" y="4" width="8" height="16" rx="2"></rect>
+  <line x1="12" y1="7" x2="12" y2="17"></line>
+</svg>
         </button><div class="mode-caption-outside">Side-by-Side</div></div>
         <!-- Single Photo -->
-        <div class="mode-item"><button id="modeSingleBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" title="Single Photo" aria-label="Single Photo">
-          <svg aria-hidden="true" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
-            <rect x="5" y="6" width="14" height="12" rx="2"></rect>
-          </svg>
+        <div class="mode-item"><button id="modeSingleBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" aria-label="Single view: focus on one photo." data-tip="Single view: focus on one photo.">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <rect x="5" y="6" width="14" height="12" rx="2"></rect>
+</svg>
         </button><div class="mode-caption-outside">Single Photo</div></div>
       </div>
       <fieldset id="singleControls" class="hidden ml-4">
@@ -113,7 +118,7 @@
     
 <div id="viewerFloat" class="flex gap-3 items-start mx-auto relative w-full">
 
-  <div id="descSpacer" class="desc-spacer" aria-hidden="true"></div>
+  <div id="descSpacerOld" style="display:none !important;" hidden aria-hidden="true" class="desc-spacer" aria-hidden="true"></div>
 <div id="imageWrapper" class="relative bg-white border border-gray-300 dark:bg-white dark:bg-gray-800 dark:border-gray-600 rounded mb-4 overflow-hidden mx-auto max-w-4xl min-h-[360px]" aria-live="polite">
 <span id="beforeBadge" class="badge left-3">Before</span>
       <span id="afterBadge" class="badge right-3">After</span>
@@ -121,12 +126,12 @@
       <img id="afterImg" class="after-img absolute inset-0 object-contain" alt="After image" />
       <canvas id="drawCanvas" aria-label="Annotation canvas" role="img"></canvas>
     </div>
-  <aside id="descPanel" class="desc-panel px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur"
+  <aside id="descPanelOld" style="display:none !important;" hidden aria-hidden="true" class="desc-panel px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur"
          aria-label="Beschrijving (max 140)">
     <label for="descriptionInput" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Beschrijving (max 140)</label>
-    <textarea id="descriptionInput" maxlength="400" class="flex-1 w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+    <textarea id="descriptionInputOld" maxlength="400" class="flex-1 w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
       placeholder="Beschrijf kort..." maxlength="400"></textarea>
-    <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="descCount">0</span>/140</div>
+    <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="descCountOld">0</span>/400</div>
   </aside>
 </div>
 
@@ -177,22 +182,22 @@
     <section class="max-w-3xl mx-auto text-gray-600 dark:text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
       <h2 class="text-blue-300 font-semibold mb-2">Tips</h2>
       <ul class="list-disc pl-6 space-y-1">
-        <li>Use the slider to reveal the “After” image.</li>
+        <li>Use the dock on the left to switch between comparison modes</li>
         <li>Use <kbd>Ctrl/Cmd + Z</kbd> to undo and <kbd>Ctrl/Cmd + Y</kbd> or <kbd>Ctrl/Cmd + Shift + Z</kbd> to redo.</li>
-        <li>Save your project in the browser and load it later.</li>
+        <li>You can move the dock on the right around by clicking the top part</li>
       </ul>
     </section>
   </main>
 
   <footer class="bg-gray-800 text-gray-400 text-center py-6 mt-12">
-  &copy; 2025 PhotoCheckr. All rights reserved.
+  &copy; 2025 YmageCheckr. All rights reserved.
 </footer>
 
 
-<!-- Ko-fi Floating Button -->
-<script src="https://storage.ko-fi.com/cdn/scripts/overlay-widget.js"></script>
+<!--  Floating Button -->
+
 <script>
-  kofiWidgetOverlay.draw('photocheckr', {
+  WidgetOverlay.draw('photocheckr', {
     'type': 'floating-chat',
     'floating-chat.donateButton.text': 'Support Me',
     'floating-chat.donateButton.background-color': '#29abe0',
@@ -204,47 +209,7 @@
 
 
 
-<script>
-(function(){
-  const html = document.documentElement;
-  const modeToggle = document.getElementById('mode-toggle');
-  const modeIcon = document.getElementById('mode-icon');
-  const modeText = document.getElementById('mode-text');
-  const logoIcon = document.getElementById('nav-logo-icon');
-  const logoFull = document.getElementById('nav-logo-full');
 
-  function setMode(mode) {
-    if (mode === 'light') {
-      html.classList.add('light');
-      modeIcon.textContent = '🌙';
-      modeText.textContent = 'Dark';
-      if (logoIcon) logoIcon.src = 'assets/logo-icon.png';
-      if (logoFull) logoFull.src = 'assets/logo-full.png';
-    } else {
-      html.classList.remove('light');
-      modeIcon.textContent = '☀️';
-      modeText.textContent = 'Light';
-      if (logoIcon) logoIcon.src = 'assets/logo-icon-white.png';
-      if (logoFull) logoFull.src = 'assets/logo-full-white.png';
-    }
-    localStorage.setItem('themeV2', mode);
-  }
-
-  if (modeToggle) {
-    modeToggle.addEventListener('click', () => {
-      const current = html.classList.contains('light') ? 'light' : 'dark';
-      setMode(current === 'light' ? 'dark' : 'light');
-    });
-  }
-
-  const saved = localStorage.getItem('themeV2');
-  if (saved) {
-    setMode(saved);
-  } else {
-    setMode('dark');
-  }
-})();
-</script>
 
 
 <!-- PATCH: Runtime V9 grid rows for descPanel (no absolute) -->
@@ -273,206 +238,59 @@
 <script>
 // Extend description textarea to match photo height (quick fix)
 (() => {
-  const iw = document.getElementById('imageWrapper');
-  const dp = document.querySelector('#viewerFloat #descPanel');
-  const ta = document.getElementById('descriptionInput');
-  if (!iw || !dp || !ta) { console.warn('Elements not found'); return; }
-
-  // helper: current numeric (px) value
-  const px = v => (v ? parseFloat(v) || 0 : 0);
-
-  function fit() {
-    const h = iw.getBoundingClientRect().height;
-    if (!h) return;
-
-    // ensure panel lays out vertically
-    dp.style.display = 'grid';
-    dp.style.gridTemplateRows = 'auto 1fr auto';
-
-    // measure label + counter + paddings
-    const label = dp.querySelector('label[for="descriptionInput"]');
-    // counter is het laatste <div> in het paneel
-    const counter = (() => {
-      const kids = Array.from(dp.children);
-      return kids[kids.length - 1]?.tagName === 'DIV' ? kids[kids.length - 1] : null;
-    })();
-
-    const cs = getComputedStyle(dp);
-    const padY = px(cs.paddingTop) + px(cs.paddingBottom);
-
-    const labelH = label ? label.getBoundingClientRect().height : 0;
-    const counterH = counter ? counter.getBoundingClientRect().height : 0;
-
-    // set explicit heights so the textarea fills to the bottom
-    dp.style.height = h + 'px';
-    ta.style.minHeight = '0';
-    ta.style.height = Math.max(60, h - (labelH + counterH + padY)) + 'px';
+  function initFit() {
+    const iw = document.getElementById('imageWrapper');
+    const dp = document.querySelector('#viewerFloat #descPanel');
+    const ta = document.getElementById('descriptionInput');
+    if (!iw || !dp || !ta) return false;
+    const px = v => (v ? parseFloat(v) || 0 : 0);
+    function fit() {
+      const h = iw.getBoundingClientRect().height;
+      if (!h) return;
+      dp.style.display = 'grid';
+      dp.style.gridTemplateRows = 'auto 1fr auto';
+      const style = getComputedStyle(dp);
+      const padY = px(style.paddingTop) + px(style.paddingBottom);
+      const label = dp.querySelector('label');
+      const counter = dp.querySelector('#descCount')?.parentElement;
+      const labelH = label ? Math.ceil(label.getBoundingClientRect().height) : 0;
+      const counterH = counter ? Math.ceil(counter.getBoundingClientRect().height) : 0;
+      const extra = 12;
+      const targetH = Math.max(40, Math.round(h - padY - labelH - counterH - extra));
+      ta.style.height = targetH + 'px';
+      ta.style.maxHeight = targetH + 'px';
+      ta.style.minHeight = Math.min(180, targetH) + 'px';
+    }
+    fit();
+    window.addEventListener('resize', fit, { passive: true });
+    return true;
   }
-
-  // initial run + react to resizes/loads
-  fit();
-  const ro = new ResizeObserver(fit);
-  ro.observe(iw);
-
-  // also watch canvas-container (height may change after draw)
-  const wrap = document.querySelector('#imageWrapper .canvas-container');
-  if (wrap) ro.observe(wrap);
-
-  window.addEventListener('resize', fit);
-  console.log('✅ descriptionInput extended to photo height');
-})();
-</script>
+  if (!initFit()){
+    const mo = new MutationObserver(() => { if (initFit()) mo.disconnect(); });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  }
+})();</script>
 
 
 <!-- PATCH: PDF export wide-page LANDSCAPE rebuild — photo full (contain) on left; desc right column -->
+
+
+  <script src="assets/tooltip-bubble.js"></script>
+
 <script>
-(() => {
-  const TAG = '[PDF wide rebuild LANDSCAPE]';
-
-  function whenJsPDF(cb){
-    function run(){ try{ cb(window.jspdf.jsPDF); }catch(e){ console.warn(TAG, e); } }
-    if (window.jspdf && window.jspdf.jsPDF) return run();
-    const iv = setInterval(() => {
-      if (window.jspdf && window.jspdf.jsPDF) { clearInterval(iv); run(); }
-    }, 200);
-    window.addEventListener('load', () => {
-      if (window.jspdf && window.jspdf.jsPDF) { clearInterval(iv); run(); }
-    });
-    setTimeout(() => clearInterval(iv), 15000);
-  }
-
-  whenJsPDF((jsPDF) => {
-    // Record addImage calls
-    function patchAddImage(proto){
-      if (!proto || proto.__recImgLandscape) return;
-      const orig = proto.addImage;
-      if (typeof orig !== 'function') return;
-      proto.addImage = function(...args){
-        try {
-          const pw = this.internal.pageSize.getWidth();
-          const ph = this.internal.pageSize.getHeight();
-          this.__imgRecs = this.__imgRecs || [];
-          let x=0,y=0,w=null,h=null;
-          if (typeof args[2] === 'number') x = args[2];
-          if (typeof args[3] === 'number') y = args[3];
-          if (typeof args[4] === 'number') w = args[4];
-          if (typeof args[5] === 'number') h = args[5];
-          this.__imgRecs.push({ args, pw, ph, x, y, w, h });
-        } catch(e){ console.warn(TAG, 'rec err', e); }
-        return orig.apply(this, args);
-      };
-      proto.__recImgLandscape = true;
-      console.log(TAG, 'recorder installed');
+(function(){
+  try{
+    var path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    var links = document.querySelectorAll('nav a[href]');
+    for (var i=0;i<links.length;i++){
+      var a = links[i];
+      var href = (a.getAttribute('href')||'').split('/').pop().toLowerCase();
+      if (href === path){
+        a.classList.add('nav-active');
+        a.style.textDecorationColor = '#F9AA33';
+      }
     }
-
-    // Save override: rebuild landscape page wider; draw main image contain-fit on left
-    function patchSave(proto){
-      if (!proto || proto.__saveWideLandscape) return;
-      proto.save = function(filename='download.pdf'){
-        try {
-          const ta = document.getElementById('descriptionInput') ||
-                     document.querySelector('#descPanel textarea') ||
-                     document.querySelector('textarea');
-          const desc = (ta?.value || '').trim();
-          const recs = this.__imgRecs || [];
-
-          if (!desc || !recs.length) {
-            // fallback normal save via blob
-            try {
-              const blob = this.output('blob');
-              const url  = URL.createObjectURL(blob);
-              const a    = document.createElement('a');
-              a.href = url; a.download = filename || 'download.pdf';
-              document.body.appendChild(a); a.click(); a.remove();
-              setTimeout(()=>URL.revokeObjectURL(url), 1500);
-            } catch (e) {
-              console.error(TAG,'blob save failed', e);
-              alert('PDF save failed: ' + (e?.message || e));
-            }
-            return this;
-          }
-
-          const main = recs[0];
-          const pw0 = main.pw, ph0 = main.ph;
-          const colW = 200; // right column
-          const wWide = pw0 + colW;
-
-          // Enforce LANDSCAPE orientation explicitly
-          const ndoc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: [wWide, ph0] });
-
-          // Draw main image contain-fit inside left area (0..pw0 by 0..ph0), centered
-          try {
-            const a = main.args.slice();
-            // get intended natural bounds from recorded width/height (fallback to full page)
-            const iw = (typeof main.w === 'number' && main.w > 0) ? main.w : pw0;
-            const ih = (typeof main.h === 'number' && main.h > 0) ? main.h : ph0;
-            const scale = Math.min(pw0 / iw, ph0 / ih);
-            const dw = Math.max(1, Math.floor(iw * scale));
-            const dh = Math.max(1, Math.floor(ih * scale));
-            const dx = Math.floor((pw0 - dw) / 2);
-            const dy = Math.floor((ph0 - dh) / 2);
-            // place image
-            a[2] = dx; a[3] = dy; a[4] = dw; a[5] = dh;
-            ndoc.addImage.apply(ndoc, a);
-          } catch(e){ console.warn(TAG, 'main image draw err', e); }
-
-          // Re-draw any additional images (overlays) with their original coords (shift x if needed? keep as is on left area)
-          try {
-            for (let i=1;i<recs.length;i++){
-              const r = recs[i];
-              const a = r.args.slice();
-              if (typeof a[2] !== 'number') a[2] = r.x || 0;
-              if (typeof a[3] !== 'number') a[3] = r.y || 0;
-              if (typeof a[4] !== 'number') a[4] = r.w || 0;
-              if (typeof a[5] !== 'number') a[5] = r.h || 0;
-              // Ensure overlay stays within left area (no shift)
-              ndoc.addImage.apply(ndoc, a);
-            }
-          } catch(e){ console.warn(TAG, 'overlay draw err', e); }
-
-          // Right white column + text (never covers photo)
-          try {
-            ndoc.setFillColor(255,255,255);
-            ndoc.rect(pw0, 0, colW, ph0, 'F');
-            ndoc.setDrawColor(160); ndoc.setLineWidth(0.5);
-            ndoc.line(pw0, 0, pw0, ph0);
-            ndoc.setTextColor(0,0,0);
-            ndoc.setFont && ndoc.setFont('helvetica','normal');
-            ndoc.setFontSize(12);
-            const margin = 8;
-            const wrapped = ndoc.splitTextToSize(desc, colW - 2*margin);
-            ndoc.text(wrapped, pw0 + margin, 28, { align:'left', baseline:'top' });
-          } catch(e){ console.warn(TAG, 'desc draw err', e); }
-
-          // Save ndoc
-          try {
-            const blob = ndoc.output('blob');
-            const url  = URL.createObjectURL(blob);
-            const a    = document.createElement('a');
-            a.href = url; a.download = filename || 'download.pdf';
-            document.body.appendChild(a); a.click(); a.remove();
-            setTimeout(()=>URL.revokeObjectURL(url), 1500);
-          } catch (e) {
-            console.error(TAG,'blob save failed', e);
-            alert('PDF save failed: ' + (e?.message || e));
-          }
-
-          return this;
-        } catch (e) {
-          console.error(TAG, 'save err', e);
-          alert('PDF export failed: ' + (e?.message || e));
-          return this;
-        }
-      };
-      proto.__saveWideLandscape = true;
-      console.log(TAG, 'save override installed');
-    }
-
-    patchAddImage(jsPDF.prototype);
-    if (jsPDF.API) patchAddImage(jsPDF.API);
-    patchSave(jsPDF.prototype);
-    if (jsPDF.API) patchSave(jsPDF.API);
-  });
+  }catch(e){}
 })();
 </script>
 
