@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="preconnect" href="https://cdn.tailwindcss.com">
+  
+  <link rel="prefetch" href="assets/nav.html"><link rel="prefetch" href="assets/footer.html">
+  <title>YmageCheckr - Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: "class" };</script>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script type="module" src="assets/tool.js"></script>
+
+  <link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="48x48" href="assets/favicon-48.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+  <link rel="icon" href="assets/favicon.ico">
+  <link rel="manifest" href="assets/site.webmanifest">
+
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col">
+
+
+  <nav class="bg-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow" aria-label="Primary">
+  <a href="index.html" class="flex items-center gap-2" aria-label="PhotoCheckr Home"><img id="nav-logo-icon" src="assets/logo-icon-white.png" alt="PhotoCheckr logo icon" class="h-8 w-8 block md:hidden"/><img id="nav-logo-full" src="assets/logo-full-white.png" alt="PhotoCheckr logo" class="h-8 hidden md:block"/></a><div class="flex items-center gap-3 ml-auto"><button id="navToggle" class="md:hidden text-gray-700 dark:text-gray-700 dark:text-gray-300 focus:outline-none focus:ring rounded px-2 py-1" aria-expanded="false" aria-controls="navMenu" aria-label="Toggle navigation">
+    ☰
+  </button><ul id="navMenu" class="hidden md:flex space-x-6 text-gray-700 dark:text-gray-700 dark:text-gray-700 dark:text-gray-300 mt-3 md:mt-0" role="menubar">
+    <li role="none"><a role="menuitem" href="index.html" data-nav="home" class="hover:text-blue-400">Home</a></li>
+    <li role="none"><a role="menuitem" href="tool.html" data-nav="tool" class="hover:text-blue-400">Tool</a></li>
+    <li role="none"><a href="3d-tool.html" class="hover:text-blue-400">3D Tool</a>
+<a role="menuitem" href="about.html" data-nav="about" class="hover:text-blue-400">About</a></li>
+    
+  </ul><button id="mode-toggle" class="flex items-center gap-1 px-3 py-1 rounded bg-gray-600 text-white hover:bg-gray-500 dark:bg-gray-300 dark:text-gray-800 dark:hover:bg-gray-200 transition"><span id="mode-icon">🌙</span><span id="mode-text">Dark</span></button></div>
+</nav></div>
+
+  <main class="flex-grow container mx-auto px-4 py-6">
+    <!-- View mode toolbar (top-left under nav) -->
+    <div id="viewModeToolbar" style="display:none" class="w-full flex items-center gap-3 mb-4 justify-start edge-left">
+      <div id="sizeControls" class="ml-4 flex items-center gap-2" title="Foto-grootte">
+        <label for="photoScale" class="text-sm text-gray-700 dark:text-gray-300 whitespace-nowrap">Foto-grootte</label>
+        <input id="photoScale" type="range" min="75" max="125" step="25" value="100" class="w-44" aria-label="Foto-grootte (in procent)">
+        <span id="photoScaleOut" class="text-sm text-gray-600 dark:text-gray-300">100%</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- Slider -->
+        <div class="mode-item"><button id="modeSliderBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="true" role="tab" aria-label="Overlay slider: compare two photos with a draggable divider." data-tip="Overlay slider: compare two photos with a draggable divider.">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <rect x="3" y="4" width="8" height="16" rx="2"></rect>
+  <rect x="13" y="4" width="8" height="16" rx="2"></rect>
+  <line x1="12" y1="4" x2="12" y2="20"></line>
+  <circle cx="12" cy="12" r="2.6"></circle>
+  <polyline points="9,12 10.5,10.5 10.5,13.5 9,12"></polyline>
+  <polyline points="15,12 13.5,10.5 13.5,13.5 15,12"></polyline>
+</svg>
+        </button><div class="mode-caption-outside">Slider</div></div>
+        <!-- Side by Side -->
+        <div class="mode-item"><button id="modeSideBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" aria-label="Side-by-side: view two photos next to each other." data-tip="Side-by-side: view two photos next to each other.">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <rect x="3" y="4" width="8" height="16" rx="2"></rect>
+  <rect x="13" y="4" width="8" height="16" rx="2"></rect>
+  <line x1="12" y1="7" x2="12" y2="17"></line>
+</svg>
+        </button><div class="mode-caption-outside">Side-by-Side</div></div>
+        <!-- Single Photo -->
+        <div class="mode-item"><button id="modeSingleBtn" class="mode-btn-square rounded-xl border border-gray-600 bg-gray-700 text-white font-semibold hover:bg-gray-600" aria-selected="false" role="tab" aria-label="Single view: focus on one photo." data-tip="Single view: focus on one photo.">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <rect x="5" y="6" width="14" height="12" rx="2"></rect>
+</svg>
+        </button><div class="mode-caption-outside">Single Photo</div></div>
+      </div>
+      <fieldset id="singleControls" class="hidden ml-4">
+        <legend class="sr-only">Single photo source</legend>
+        <label class="mr-3 inline-flex items-center gap-1 text-sm">
+          <input type="radio" id="singleBefore" name="singleSource" value="before" checked />
+          <span>Before</span>
+        </label>
+        <label class="inline-flex items-center gap-1 text-sm">
+          <input type="radio" id="singleAfter" name="singleSource" value="after" />
+          <span>After</span>
+        </label>
+      </fieldset>
+    </div>
+
+    <h1 class="text-3xl font-bold text-blue-400 text-center mb-6">Compare & Annotate</h1>
+
+    <div class="flex justify-center mb-4">
+      <label for="projectTitle" class="sr-only">Project name</label>
+      <input
+        id="projectTitle"
+        type="text"
+        placeholder="Enter project name..."
+        class="px-4 py-2 rounded bg-white dark:bg-gray-800 text-white border border-gray-600 w-full max-w-md text-center"
+        aria-describedby="titleHelp"
+      />
+    </div>
+    <p id="titleHelp" class="text-center text-gray-600 dark:text-gray-600 dark:text-gray-400 mb-4 text-sm">This title will be used as the PDF filename.</p>
+
+    <div class="flex flex-wrap justify-center gap-6 mb-6">
+      <div>
+        <label class="block mb-2 text-blue-300 font-medium" for="beforeUpload">Before Image</label>
+        <label for="beforeUpload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-block">
+          Upload Before
+        </label>
+        <input type="file" id="beforeUpload" accept="image/*" class="hidden" aria-label="Upload before image">
+      </div>
+      <div>
+        <label class="block mb-2 text-blue-300 font-medium" for="afterUpload">After Image</label>
+        <label for="afterUpload" class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded inline-block">
+          Upload After
+        </label>
+        <input type="file" id="afterUpload" accept="image/*" class="hidden" aria-label="Upload after image">
+      </div>
+    </div>
+
+    
+<div id="viewerFloat" class="flex gap-3 items-start mx-auto relative w-full">
+
+  <div id="descSpacerOld" style="display:none !important;" hidden aria-hidden="true" class="desc-spacer" aria-hidden="true"></div>
+<div id="imageWrapper" class="relative bg-white border border-gray-300 dark:bg-white dark:bg-gray-800 dark:border-gray-600 rounded mb-4 overflow-hidden mx-auto max-w-4xl min-h-[360px]" aria-live="polite">
+<span id="beforeBadge" class="badge left-3">Before</span>
+      <span id="afterBadge" class="badge right-3">After</span>
+      <img id="beforeImg" src="" alt="Before image" class="absolute inset-0 object-contain" style="z-index: 1;" />
+      <img id="afterImg" class="after-img absolute inset-0 object-contain" alt="After image" />
+      <canvas id="drawCanvas" aria-label="Annotation canvas" role="img"></canvas>
+    </div>
+  <aside id="descPanelOld" style="display:none !important;" hidden aria-hidden="true" class="desc-panel px-3 py-2 border border-gray-300 dark:border-gray-700 bg-white/90 dark:bg-gray-900/90 backdrop-blur"
+         aria-label="Beschrijving (max 140)">
+    <label for="descriptionInput" class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Beschrijving (max 140)</label>
+    <textarea id="descriptionInputOld" maxlength="400" class="flex-1 w-full p-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 resize-none"
+      placeholder="Beschrijf kort..." maxlength="400"></textarea>
+    <div class="text-[10px] text-gray-500 dark:text-gray-400 mt-1"><span id="descCountOld">0</span>/400</div>
+  </aside>
+</div>
+
+
+    
+    <!-- Side-by-side container (hidden by default) -->
+    <div id="sideBySideContainer" class="hidden bg-white border border-gray-700 rounded mb-4 overflow-hidden mx-auto max-w-4xl relative">
+      <div class="grid grid-cols-2 gap-0 h-full min-h-[200px]">
+        <div class="relative">
+          <img id="beforeImgSide" alt="Before image (side)" class="absolute inset-0 w-full h-full object-contain" />
+        </div>
+        <div class="relative">
+          <img id="afterImgSide" alt="After image (side)" class="absolute inset-0 w-full h-full object-contain" />
+        </div>
+      </div>
+      <canvas id="drawCanvasSide" aria-label="Annotation canvas (side-by-side)" role="img"></canvas>
+    </div>
+<div id="sliderContainer" class="w-full max-w-2xl mx-auto flex flex-col items-center gap-2 mb-6">
+      <label for="slider" class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300">Comparison slider</label>
+      <input type="range" id="slider" min="0" max="100" value="50" class="w-full accent-blue-500 cursor-pointer" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" />
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-3 mb-6">
+      <button id="drawBtn" onclick="setMode('draw')" class="btn" aria-label="Enable drawing mode">✏️ Draw</button>
+      <button onclick="addText()" class="btn">📝 Text</button>
+      <button onclick="addCircle()" class="btn">⚪ Circle</button>
+      <button onclick="addRect()" class="btn">▭ Rectangle</button>
+      <button onclick="addArrow()" class="btn">➡️ Arrow</button>
+      <button id="undoBtn" class="btn" aria-label="Undo (Ctrl/Cmd+Z)">↩️ Undo</button>
+      <button id="redoBtn" class="btn" aria-label="Redo (Ctrl/Cmd+Shift+Z / Ctrl/Cmd+Y)">↪️ Redo</button>
+      <button id="clearBtn" class="btn" aria-label="Clear annotations">🗑️ Clear</button>
+      <button onclick="exportPDF()" class="btn bg-green-600 hover:bg-green-700" aria-label="Download PDF">📄 Download PDF</button>
+    </div>
+
+    <div class="flex flex-wrap justify-center gap-4 mb-10">
+      <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="colorPicker">
+        🎨 Color:
+        <input type="color" id="colorPicker" class="h-8 w-8 rounded" value="#ff0000">
+      </label>
+      <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="lineWidth">
+        ✍️ Line Width:
+        <input type="range" id="lineWidth" min="1" max="10" value="2" class="accent-blue-500">
+      </label>
+      <label class="text-sm text-gray-700 dark:text-gray-700 dark:text-gray-300 flex items-center gap-2" for="qualitySelect">📄 PDF Quality:<select id="qualitySelect" class="bg-white border border-gray-300 dark:bg-white dark:bg-gray-800 dark:border-gray-600 rounded px-2 py-1"><option value="1">Screen (1x)</option><option value="2" selected>Sharp (2x)</option><option value="3">Print-ish (3x)</option></select></label><button id="saveBtn" class="btn" aria-label="Save project to browser">💾 Save</button>
+      <button id="loadBtn" class="btn" aria-label="Load project from browser">📂 Load</button>
+    </div>
+
+    <section class="max-w-3xl mx-auto text-gray-600 dark:text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+      <h2 class="text-blue-300 font-semibold mb-2">Tips</h2>
+      <ul class="list-disc pl-6 space-y-1">
+        <li>Use the dock on the left to switch between comparison modes</li>
+        <li>Use <kbd>Ctrl/Cmd + Z</kbd> to undo and <kbd>Ctrl/Cmd + Y</kbd> or <kbd>Ctrl/Cmd + Shift + Z</kbd> to redo.</li>
+        <li>You can move the dock on the right around by clicking the top part</li>
+      </ul>
+    </section>
+  </main>
+
+  <footer class="bg-gray-800 text-gray-400 text-center py-6 mt-12">
+  &copy; 2025 YmageCheckr. All rights reserved.
+</footer>
+
+
+<!--  Floating Button -->
+
+<script>
+  WidgetOverlay.draw('photocheckr', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support Me',
+    'floating-chat.donateButton.background-color': '#29abe0',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script>
+
+
+
+
+
+
+
+
+<!-- PATCH: Runtime V9 grid rows for descPanel (no absolute) -->
+<script>
+// Runtime V9: grid rows for descPanel, no absolute positioning
+(() => {
+  const dp = document.querySelector('#viewerFloat #descPanel');
+  const ti = document.getElementById('descriptionInput');
+  const last = dp ? dp.querySelector('div:last-child') : null;
+  if (dp) {
+    Object.assign(dp.style, {
+      position: 'static',
+      display: 'grid',
+      gridTemplateRows: 'auto 1fr auto',
+      paddingBottom: '0'
+    });
+  }
+  if (last) Object.assign(last.style, { position: 'static', left:'', right:'', bottom:'' });
+  if (ti) Object.assign(ti.style, { minHeight:'0', height:'auto' });
+  console.log('Runtime V9 applied');
+})();
+</script>
+
+
+<!-- PATCH: Extend description textarea to match photo height -->
+<script>
+// Extend description textarea to match photo height (quick fix)
+(() => {
+  function initFit() {
+    const iw = document.getElementById('imageWrapper');
+    const dp = document.querySelector('#viewerFloat #descPanel');
+    const ta = document.getElementById('descriptionInput');
+    if (!iw || !dp || !ta) return false;
+    const px = v => (v ? parseFloat(v) || 0 : 0);
+    function fit() {
+      const h = iw.getBoundingClientRect().height;
+      if (!h) return;
+      dp.style.display = 'grid';
+      dp.style.gridTemplateRows = 'auto 1fr auto';
+      const style = getComputedStyle(dp);
+      const padY = px(style.paddingTop) + px(style.paddingBottom);
+      const label = dp.querySelector('label');
+      const counter = dp.querySelector('#descCount')?.parentElement;
+      const labelH = label ? Math.ceil(label.getBoundingClientRect().height) : 0;
+      const counterH = counter ? Math.ceil(counter.getBoundingClientRect().height) : 0;
+      const extra = 12;
+      const targetH = Math.max(40, Math.round(h - padY - labelH - counterH - extra));
+      ta.style.height = targetH + 'px';
+      ta.style.maxHeight = targetH + 'px';
+      ta.style.minHeight = Math.min(180, targetH) + 'px';
+    }
+    fit();
+    window.addEventListener('resize', fit, { passive: true });
+    return true;
+  }
+  if (!initFit()){
+    const mo = new MutationObserver(() => { if (initFit()) mo.disconnect(); });
+    mo.observe(document.documentElement, { childList: true, subtree: true });
+  }
+})();</script>
+
+
+<!-- PATCH: PDF export wide-page LANDSCAPE rebuild — photo full (contain) on left; desc right column -->
+
+
+  <script src="assets/tooltip-bubble.js"></script>
+
+<script>
+(function(){
+  try{
+    var path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    var links = document.querySelectorAll('nav a[href]');
+    for (var i=0;i<links.length;i++){
+      var a = links[i];
+      var href = (a.getAttribute('href')||'').split('/').pop().toLowerCase();
+      if (href === path){
+        a.classList.add('nav-active');
+        a.style.textDecorationColor = '#F9AA33';
+      }
+    }
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

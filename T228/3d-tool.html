@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html>
+<head><script>window.tailwind = window.tailwind || {}; window.tailwind.config = window.tailwind.config || {};</script>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<link href="https://cdn.tailwindcss.com" rel="preconnect"/>
+<link href="assets/nav.html" rel="prefetch"/><link href="assets/footer.html" rel="prefetch"/>
+<title class="nav-active" style="text-decoration-color:#F9AA33">3D Tool</title>
+<script>tailwind.config = { darkMode: "class" }</script>
+<script>tailwind = { config: { darkMode: "class" } }</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="assets/styles.css" rel="stylesheet"/>
+<link href="assets/favicon-16.png" rel="icon" sizes="16x16" type="image/png"/>
+<link href="assets/favicon-32.png" rel="icon" sizes="32x32" type="image/png"/>
+<link href="assets/favicon-48.png" rel="icon" sizes="48x48" type="image/png"/>
+<link href="assets/apple-touch-icon.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="assets/favicon.ico" rel="icon"/>
+<link href="assets/site.webmanifest" rel="manifest"/>
+<script src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js" type="module"></script><script src="https://cdn.jsdelivr.net/npm/online-3d-viewer@0.16.0/build/engine/o3dv.min.js"></script>
+
+<style>
+#left-drop, #right-drop { position: relative; }
+#left-drop model-viewer, #right-drop model-viewer, 
+#left-drop .o3dv-host, #right-drop .o3dv-host { width:100%; height:100%; }
+#left-drop .o3dv-host, #right-drop .o3dv-host { display:none; }
+#left-drop.--use-o3dv .o3dv-host, #right-drop.--use-o3dv .o3dv-host { display:block; }
+#left-drop.--use-o3dv model-viewer, #right-drop.--use-o3dv model-viewer { display:none; }
+#left-drop, #right-drop {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #0B0B0B;
+  width: min(70vh, 35vw);   /* ← DIT is je ‘parameter’ */
+}
+</style></head>
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen flex flex-col"><script>window.WidgetOverlay = window.WidgetOverlay || class { constructor(){} show(){} hide(){} };</script>
+<nav aria-label="Primary" class="bg-gray-800 px-6 py-4 flex justify-between items-center sticky top-0 z-50 shadow">
+<a aria-label="PhotoCheckr Home" class="flex items-center gap-2" href="index.html"><img alt="PhotoCheckr logo icon" class="h-8 w-8 block md:hidden" id="nav-logo-icon" src="assets/logo-icon-white.png"/><img alt="PhotoCheckr logo" class="h-8 hidden md:block" id="nav-logo-full" src="assets/logo-full-white.png"/></a><div class="flex items-center gap-3 ml-auto"><button aria-controls="navMenu" aria-expanded="false" aria-label="Toggle navigation" class="md:hidden text-gray-700 dark:text-gray-700 dark:text-gray-300 focus:outline-none focus:ring rounded px-2 py-1" id="navToggle">
+    ☰
+  </button><ul class="hidden md:flex space-x-6 text-gray-700 dark:text-gray-700 dark:text-gray-700 dark:text-gray-300 mt-3 md:mt-0" id="navMenu" role="menubar">
+<li role="none"><a class="hover:text-blue-400" data-nav="home" href="index.html" role="menuitem">Home</a></li>
+<li role="none"><a class="hover:text-blue-400" data-nav="tool" href="tool.html" role="menuitem">Tool</a></li>
+<li role="none"><a class="nav-active" href="3d-tool.html" style="text-decoration-color:#F9AA33">3D Tool</a>
+<a class="hover:text-blue-400" data-nav="about" href="about.html" role="menuitem">About</a></li>
+</ul></div></nav>
+<main class="max-w-none mx-auto px-4 py-8">
+<h1 class="text-2xl font-bold mb-4">3D Tool — Vergelijk (A | B)</h1>
+<div class="flex flex-wrap items-center gap-3 mb-4">
+<label class="px-3 py-2 rounded-xl bg-neutral-800 cursor-pointer" for="left-file">Laad links</label>
+<input accept=".glb,.gltf,.bin,.png,.jpg,.jpeg,.webp,.fbx,.obj,.mtl,.stl,.ply,.3ds,.dae,.wrl,.off" class="hidden" id="left-file" multiple="" type="file"/>
+<label class="px-3 py-2 rounded-xl bg-neutral-800 cursor-pointer" for="right-file">Laad rechts</label>
+<input accept=".glb,.gltf,.bin,.png,.jpg,.jpeg,.webp,.fbx,.obj,.mtl,.stl,.ply,.3ds,.dae,.wrl,.off" class="hidden" id="right-file" multiple="" type="file"/>
+<button class="px-3 py-2 rounded-xl bg-neutral-800" id="btn-autorotate">Auto-rotate</button>
+<button class="px-3 py-2 rounded-xl bg-neutral-800" id="btn-swap">Swap A↔B</button>
+<button class="px-3 py-2 rounded-xl bg-neutral-700" id="btn-sample-both">Laad voorbeeld (A &amp; B)</button>
+<label class="ml-auto inline-flex items-center gap-2 text-sm"><input checked="" id="link-views" type="checkbox"/> Link views</label>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Left pane -->
+<div class="rounded-2xl border-2 border-dashed border-[#F9AA33] p-3 bg-[#0E0E0E] min-h-[140px] flex flex-col gap-3" id="left-drop">
+<model-viewer camera-controls="" environment-image="neutral" exposure="1.0" id="left-mv" shadow-intensity="0" style="width:100%; height:60vh; background:#0B0B0B; border-radius:12px"></model-viewer>
+<div class="text-sm text-neutral-400" id="left-meta"></div>
+<div class="text-sm text-red-400" id="left-error"></div>
+<div class="o3dv-host"></div></div>
+<!-- Right pane -->
+<div class="rounded-2xl border-2 border-dashed border-[#F9AA33] p-3 bg-[#0E0E0E] min-h-[140px] flex flex-col gap-3" id="right-drop">
+<model-viewer camera-controls="" environment-image="neutral" exposure="1.0" id="right-mv" shadow-intensity="0" style="width:100%; height:60vh; background:#0B0B0B; border-radius:12px"></model-viewer>
+<div class="text-sm text-neutral-400" id="right-meta"></div>
+<div class="text-sm text-red-400" id="right-error"></div>
+<div class="o3dv-host"></div></div>
+</div>
+<p class="text-sm text-neutral-300 mt-3">Tekst nog invullen</p>
+</main>
+<footer class="bg-gray-800 text-gray-400 text-center py-6 mt-12">
+  © 2025 YmageCheckr. All rights reserved.
+</footer>
+<!--  Floating Button -->
+<script>
+  WidgetOverlay.draw('photocheckr', {
+    'type': 'floating-chat',
+    'floating-chat.donateButton.text': 'Support Me',
+    'floating-chat.donateButton.background-color': '#29abe0',
+    'floating-chat.donateButton.text-color': '#fff'
+  });
+</script>
+<script>
+(function(){
+  try{
+    var path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    var links = document.querySelectorAll('nav a[href]');
+    for (var i=0;i<links.length;i++){
+      var a = links[i];
+      var href = (a.getAttribute('href')||'').split('/').pop().toLowerCase();
+      if (href === path){
+        a.classList.add('nav-active');
+        a.style.textDecorationColor = '#F9AA33';
+      }
+    }
+  }catch(e){}
+})();
+</script>
+<script>
+(function(){
+  try{
+    var path = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+    var links = document.querySelectorAll('nav a[href]');
+    for (var i=0;i<links.length;i++){
+      var a = links[i];
+      var href = (a.getAttribute('href')||'').split('/').pop().toLowerCase();
+      if (href === path){
+        a.classList.add('nav-active');
+        a.style.textDecorationColor = '#F9AA33';
+      }
+    }
+  }catch(e){}
+})();
+</script>
+
+<style>
+  /* Vierkante panelen, donkere achtergrond */
+  #left-drop, #right-drop {
+    position: relative;
+    aspect-ratio: 1 / 1;       /* vierkant */
+    background: #0B0B0B;
+  }
+
+  /* Laat zowel <model-viewer> als O3DV-host exact de container vullen */
+  #left-drop model-viewer,
+  #right-drop model-viewer,
+  #left-drop .o3dv-host,
+  #right-drop .o3dv-host {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+  }
+
+  /* Alleen de actieve viewer tonen */
+  #left-drop .o3dv-host, #right-drop .o3dv-host { display: none; }
+  #left-drop.--use-o3dv .o3dv-host, #right-drop.--use-o3dv .o3dv-host { display: block; }
+  #left-drop.--use-o3dv model-viewer, #right-drop.--use-o3dv model-viewer { display: none; }
+</style>
+
+
+<script src="assets/js/dual-mv-viewer.js" type="module"></script>
+<script src="assets/js/dual-viewer-hybrid.bundle.js"></script></body>
+</html>
